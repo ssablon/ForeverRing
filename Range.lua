@@ -20,6 +20,59 @@ local COLORS = {
 	oor = { 1.00, 0.16, 0.16 },
 }
 
+local SOURCE_ORDER = { "auto", "target", "mouseover", "focus" }
+local SOURCE_KEYS = {
+	auto = "OPT_RANGE_AUTO",
+	target = "OPT_RANGE_TARGET",
+	mouseover = "OPT_RANGE_MOUSEOVER",
+	focus = "OPT_RANGE_FOCUS",
+}
+
+-- Closest-first. IsSpellInRange nil = unknown, skipped.
+local RANGE_SPELLS = {
+	{ "Hamstring", 5 },
+	{ "Rend", 5 },
+	{ "Heroic Strike", 5 },
+	{ "Mortal Strike", 5 },
+	{ "Sinister Strike", 5 },
+	{ "Backstab", 5 },
+	{ "Eviscerate", 5 },
+	{ "Crusader Strike", 5 },
+	{ "Holy Strike", 5 },
+	{ "Wing Clip", 5 },
+	{ "Mongoose Bite", 5 },
+	{ "Raptor Strike", 5 },
+	{ "Growl", 5 },
+	{ "Maul", 5 },
+	{ "Claw", 5 },
+	{ "Shred", 5 },
+	{ "Mind Flay", 20 },
+	{ "Charge", 25 },
+	{ "Intercept", 25 },
+	{ "Smite", 30 },
+	{ "Shadow Word: Pain", 30 },
+	{ "Flash Heal", 30 },
+	{ "Heal", 30 },
+	{ "Holy Light", 30 },
+	{ "Flash of Light", 30 },
+	{ "Lesser Healing Wave", 30 },
+	{ "Healing Wave", 30 },
+	{ "Lightning Bolt", 30 },
+	{ "Earth Shock", 20 },
+	{ "Frostbolt", 30 },
+	{ "Fireball", 35 },
+	{ "Wrath", 30 },
+	{ "Moonfire", 30 },
+	{ "Healing Touch", 30 },
+	{ "Regrowth", 30 },
+	{ "Rejuvenation", 30 },
+	{ "Shadow Bolt", 30 },
+	{ "Shoot", 30 },
+	{ "Auto Shot", 35 },
+	{ "Arcane Shot", 35 },
+	{ "Serpent Sting", 35 },
+}
+
 local function safe(fn, ...)
 	if not fn then
 		return nil
@@ -96,9 +149,64 @@ function ns.RangeColor(yards)
 	return COLORS.oor
 end
 
+function ns.RangeSource()
+	local src = ns.db and ns.db.rangeSource
+	if src == "target" or src == "mouseover" or src == "focus" then
+		return src
+	end
+	return "auto"
+end
+
+function ns.RangeSourceLabel()
+	return ns.T(SOURCE_KEYS[ns.RangeSource()] or "OPT_RANGE_AUTO")
+end
+
+function ns.CycleRangeSource()
+	if not ns.db then
+		return
+	end
+	local cur = ns.RangeSource()
+	local idx = 1
+	for i, code in ipairs(SOURCE_ORDER) do
+		if code == cur then
+			idx = i
+			break
+		end
+	end
+	ns.db.rangeSource = SOURCE_ORDER[(idx % #SOURCE_ORDER) + 1]
+	if ns.RelocalizeOptions then
+		ns.RelocalizeOptions()
+	end
+	if ns.UpdateRingCombat then
+		ns.UpdateRingCombat()
+	end
+end
+
+function ns.RangeUnit()
+	local mode = ns.RangeSource()
+	if mode == "target" then
+		return unitOk("target") and "target" or nil
+	end
+	if mode == "mouseover" then
+		return unitOk("mouseover") and "mouseover" or nil
+	end
+	if mode == "focus" then
+		return unitOk("focus") and "focus" or nil
+	end
+	if unitOk("mouseover") then
+		return "mouseover"
+	end
+	if unitOk("focus") then
+		return "focus"
+	end
+	if unitOk("target") then
+		return "target"
+	end
+	return nil
+end
+
 local cachedLib, libTried
 
--- Classic interact checks: duel ~10, trade ~11, inspect/follow ~28.
 local function libRange()
 	if libTried then
 		return cachedLib
@@ -107,53 +215,81 @@ local function libRange()
 	if not LibStub then
 		return nil
 	end
-	local names = { "LibRangeCheck-3.0" }
-	for i = 1, #names do
-		local ok, lib = pcall(LibStub, names[i], true)
-		if ok and lib and lib.GetRange then
-			cachedLib = lib
-			return lib
-		end
+	local ok, lib = pcall(LibStub, "LibRangeCheck-3.0", true)
+	if ok and lib and lib.GetRange then
+		cachedLib = lib
+		return lib
 	end
 	return nil
 end
 
+local function estimate(unit)
+	local lower, upper
+
+	local function inAt(yards)
+		if upper then
+			upper = math.min(upper, yards)
+		else
+			upper = yards
+		end
+	end
+
+	local function outAt(yards)
+		if lower then
+			lower = math.max(lower, yards)
+		else
+			lower = yards
+		end
+	end
+
+	if interact(unit, 3) then
+		inAt(10)
+	else
+		outAt(10)
+	end
+	if interact(unit, 2) then
+		inAt(11)
+	else
+		outAt(11)
+	end
+	if interact(unit, 1) or interact(unit, 4) then
+		inAt(28)
+	else
+		outAt(28)
+	end
+
+	for i = 1, #RANGE_SPELLS do
+		local row = RANGE_SPELLS[i]
+		local r = spellRange(unit, row[1])
+		if r == true then
+			inAt(row[2])
+		elseif r == false then
+			outAt(row[2])
+		end
+	end
+
+	if not lower and not upper then
+		return nil
+	end
+	if lower and upper and lower >= upper then
+		return math.max(0, upper - 1), upper
+	end
+	return lower or 0, upper
+end
+
 function ns.GetTargetRange()
-	if not unitOk("target") then
+	local unit = ns.RangeUnit()
+	if not unit then
 		return nil
 	end
 	local lib = libRange()
 	if lib then
-		local minR, maxR = safe(lib.GetRange, lib, "target", true)
+		local minR, maxR = safe(lib.GetRange, lib, unit, true)
 		if minR or maxR then
 			return minR, maxR
 		end
 	end
-	local near10 = interact("target", 3)
-	local near11 = interact("target", 2)
-	local near28 = interact("target", 1) or interact("target", 4)
-
-	if near10 then
-		return 0, 10
-	end
-	if near11 then
-		return 8, 11
-	end
-	if near28 then
-		return 11, 28
-	end
-
-	local in30 = spellRange("target", "Fireball")
-		or spellRange("target", "Lightning Bolt")
-		or spellRange("target", "Shadow Bolt")
-		or spellRange("target", "Smite")
-		or spellRange("target", "Wrath")
-		or spellRange("target", "Auto Shot")
-		or spellRange("target", "Hunter's Mark")
-	if in30 == true then
-		return 28, 35
-	end
-	return 28, nil
+	return estimate(unit)
 end
 
 function ns.RangeYards()

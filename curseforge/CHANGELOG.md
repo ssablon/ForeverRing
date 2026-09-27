@@ -1,3 +1,8 @@
+# 1.0.0
+
+- First full release. Existing options and sliders all apply. Toggle can hide the rings.
+- Range uses mouseover, then focus, then target (or pick one). Hide over menus. Cast flashes red if interrupted. Opacity slider.
+
 # 0.1.15
 
 - Own textures only. Player docs and fallback UI stay English. Auto follows the client; Language in options can switch, including French.

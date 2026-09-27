@@ -2,7 +2,7 @@
 
 Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un anneau de portée plus petit est à l'intérieur. Les yards sont au-dessus. L'incantation remplit l'anneau. L'addon ne lance aucun sort. Textes joueur en anglais par défaut ; Auto = langue du client ; le joueur peut choisir une autre langue (dont le français).
 
-Version actuelle : **0.1.15**. Auteur : Vohnka — https://wow-forever.fr  
+Version actuelle : **1.0.0**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
 Pas de publication CurseForge tant que l'utilisateur n'a pas validé.

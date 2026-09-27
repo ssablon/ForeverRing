@@ -1,3 +1,9 @@
+1.0.0
+
+2026-09-27
+- First full release. Existing options and sliders all apply. Toggle can hide the rings.
+- Range uses mouseover, then focus, then target (or pick one). Hide over menus. Cast flashes red if interrupted. Opacity slider.
+
 0.1.15
 
 2026-09-27

@@ -5,6 +5,8 @@ local THIN_FILE = "Interface\\AddOns\\ForeverRing\\thin_ring.tga"
 local CAST_FILE = "Interface\\AddOns\\ForeverRing\\cast_segment.tga"
 
 local NUM_CAST_SEGMENTS = 48
+local CAST_OK = { 1, 1, 1 }
+local CAST_FAIL = { 1, 0.18, 0.12 }
 
 local CLASS_COLORS = {
 	WARRIOR = { 0.78, 0.61, 0.43 },
@@ -18,16 +20,30 @@ local CLASS_COLORS = {
 	DRUID = { 1.00, 0.49, 0.04 },
 }
 
-local f, ring, rangeRing, rangeLabel
+local drive, f, ring, rangeRing, rangeLabel
 local castSegments = {}
 local cachedUILeft, cachedUIBottom, cachedScale
 local lastCursorX, lastCursorY
 local lastLit = -1
 local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
-local lastRingR, lastRingG, lastRingB
+local lastRingR, lastRingG, lastRingB, lastRingA
 local createdOnce = false
 local casting = false
+local interrupted = false
 local castTicker
+local lastShown
+local lastOverUI
+
+local function safe(fn, ...)
+	if not fn then
+		return nil
+	end
+	local ok, a, b, c = pcall(fn, ...)
+	if not ok then
+		return nil
+	end
+	return a, b, c
+end
 
 function ns.PlayerClassColor()
 	local class
@@ -58,6 +74,15 @@ function ns.ClearRingRect()
 	lastCursorX, lastCursorY = nil, nil
 end
 
+function ns.InCombat()
+	local ok, v = pcall(UnitAffectingCombat, "player")
+	return ok and v and true or false
+end
+
+function ns.AddonOn()
+	return not ns.db or ns.db.enabled ~= false
+end
+
 local function ringSize()
 	return tonumber(ns.db and ns.db.ringSize) or 48
 end
@@ -72,13 +97,13 @@ local function innerRangeSize()
 	return math.max(16, size - gap)
 end
 
-local function castColor()
-	return 1, 1, 1
-end
-
-local function clamp01(v)
-	if v < 0 then
-		return 0
+local function ringAlpha()
+	local v = tonumber(ns.db and ns.db.ringAlpha) or 100
+	if v > 1 then
+		v = v / 100
+	end
+	if v < 0.15 then
+		return 0.15
 	end
 	if v > 1 then
 		return 1
@@ -86,36 +111,110 @@ local function clamp01(v)
 	return v
 end
 
+local function mouseFrame()
+	if GetMouseFoci then
+		local ok, foci = pcall(GetMouseFoci)
+		if ok and type(foci) == "table" and foci[1] then
+			return foci[1]
+		end
+	end
+	if GetMouseFocus then
+		return safe(GetMouseFocus)
+	end
+	return nil
+end
+
+local function overWorldOrUnit(frame)
+	if not frame then
+		return true
+	end
+	if frame == WorldFrame or frame == UIParent then
+		return true
+	end
+	if f and (frame == f or frame == drive) then
+		return true
+	end
+	local walk = frame
+	for _ = 1, 10 do
+		if not walk then
+			break
+		end
+		if walk == WorldFrame or walk == f or walk == drive then
+			return true
+		end
+		walk = walk.GetParent and walk:GetParent() or nil
+	end
+	return false
+end
+
+local function mouseOverUI()
+	if ns.db and ns.db.hideOverUI == false then
+		return false
+	end
+	if safe(UnitExists, "mouseover") then
+		return false
+	end
+	return not overWorldOrUnit(mouseFrame())
+end
+
+function ns.RingShouldShow()
+	if not ns.AddonOn() then
+		return false
+	end
+	if ns.db and ns.db.showOutOfCombat == false and not ns.InCombat() then
+		return false
+	end
+	if mouseOverUI() then
+		return false
+	end
+	return true
+end
+
+local function applyShown(show)
+	if not f then
+		return
+	end
+	if show == lastShown then
+		return
+	end
+	lastShown = show
+	if show then
+		f:Show()
+	else
+		f:Hide()
+	end
+end
+
+local function paintSegments(color, fromI, toI, alpha)
+	local r, g, b = color[1], color[2], color[3]
+	for i = fromI, toI do
+		if castSegments[i] then
+			castSegments[i]:SetVertexColor(r, g, b, alpha)
+		end
+	end
+end
+
 local function clearCast()
 	if lastLit <= 0 then
 		lastLit = 0
 		return
 	end
-	local cr, cg, cb = castColor()
-	for i = 1, lastLit do
-		if castSegments[i] then
-			castSegments[i]:SetVertexColor(cr, cg, cb, 0)
-		end
-	end
+	paintSegments(CAST_OK, 1, lastLit, 0)
 	lastLit = 0
 end
 
-local function setLit(numLit)
-	if numLit == lastLit then
+local function setLit(numLit, color)
+	color = color or CAST_OK
+	local a = ringAlpha()
+	if numLit == lastLit and color == CAST_OK then
 		return
 	end
-	local cr, cg, cb = castColor()
 	if numLit > lastLit then
-		for i = lastLit + 1, numLit do
-			if castSegments[i] then
-				castSegments[i]:SetVertexColor(cr, cg, cb, 1)
-			end
-		end
+		paintSegments(color, lastLit + 1, numLit, a)
 	else
-		for i = numLit + 1, lastLit do
-			if castSegments[i] then
-				castSegments[i]:SetVertexColor(cr, cg, cb, 0)
-			end
+		paintSegments(CAST_OK, numLit + 1, lastLit, 0)
+		if color ~= CAST_OK and numLit > 0 then
+			paintSegments(color, 1, numLit, a)
 		end
 	end
 	lastLit = numLit
@@ -139,27 +238,40 @@ local function toSeconds(startT, endT)
 	return startT, endT
 end
 
+local function castAllowed()
+	if ns.db and ns.db.showCast == false then
+		return false
+	end
+	if ns.db and ns.db.onlyCombat and not ns.InCombat() then
+		return false
+	end
+	return ns.RingShouldShow()
+end
+
 local function castProgress()
 	local now = GetTime()
 	local ok, name, _, _, startT, endT = pcall(UnitCastingInfo, "player")
 	if ok and name then
 		startT, endT = toSeconds(startT, endT)
 		if startT and endT and endT > startT then
-			return clamp01((now - startT) / (endT - startT))
+			return math.min(1, math.max(0, (now - startT) / (endT - startT)))
 		end
 	end
 	ok, name, _, _, startT, endT = pcall(UnitChannelInfo, "player")
 	if ok and name then
 		startT, endT = toSeconds(startT, endT)
 		if startT and endT and endT > startT then
-			return clamp01(1 - ((now - startT) / (endT - startT)))
+			return math.min(1, math.max(0, 1 - ((now - startT) / (endT - startT))))
 		end
 	end
 	return nil
 end
 
 local function updateCastRing()
-	if not ns.db or ns.db.showCast == false then
+	if interrupted then
+		return
+	end
+	if not castAllowed() then
 		clearCast()
 		casting = false
 		stopCastTicker()
@@ -175,20 +287,80 @@ local function updateCastRing()
 		return
 	end
 	casting = true
-	setLit(math.floor(progress * NUM_CAST_SEGMENTS + 0.5))
+	setLit(math.floor(progress * NUM_CAST_SEGMENTS + 0.5), CAST_OK)
 end
 
 local function startCastTicker()
-	if castTicker or (ns.db and ns.db.showCast == false) then
+	if castTicker or not castAllowed() then
 		return
 	end
 	castTicker = C_Timer.NewTicker(0.05, updateCastRing)
 end
 
+local function flashInterrupt()
+	interrupted = true
+	casting = false
+	stopCastTicker()
+	local a = ringAlpha()
+	paintSegments(CAST_FAIL, 1, NUM_CAST_SEGMENTS, a)
+	lastLit = NUM_CAST_SEGMENTS
+	C_Timer.After(0.45, function()
+		interrupted = false
+		clearCast()
+	end)
+end
+
+local function followCursor()
+	if not f then
+		return
+	end
+	if not cachedUILeft then
+		cachedUILeft, cachedUIBottom = UIParent:GetRect()
+		cachedScale = UIParent:GetEffectiveScale()
+	end
+	local x, y = GetCursorPosition()
+	local scale = cachedScale or UIParent:GetEffectiveScale()
+	x = x / scale - cachedUILeft
+	y = y / scale - cachedUIBottom
+	if x == lastCursorX and y == lastCursorY then
+		return
+	end
+	lastCursorX, lastCursorY = x, y
+	f:ClearAllPoints()
+	f:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
+end
+
+local function tickDrive()
+	if not ns.AddonOn() then
+		applyShown(false)
+		if drive then
+			drive:Hide()
+		end
+		return
+	end
+	local over = mouseOverUI()
+	if over ~= lastOverUI then
+		lastOverUI = over
+		lastShown = nil
+	end
+	local show = ns.RingShouldShow()
+	if show then
+		followCursor()
+	end
+	applyShown(show)
+end
+
 function ns.CreateRing()
+	if not drive then
+		drive = CreateFrame("Frame", "ForeverRingDrive", UIParent)
+		drive:SetFrameStrata("TOOLTIP")
+		drive:SetScript("OnUpdate", tickDrive)
+	end
+	drive:Show()
+
 	if ring and f then
-		f:Show()
-		ring:Show()
+		lastShown = nil
+		applyShown(ns.RingShouldShow())
 		return f
 	end
 
@@ -203,15 +375,13 @@ function ns.CreateRing()
 	f:SetClampedToScreen(false)
 	f:SetPoint("CENTER", UIParent, "CENTER")
 
-	-- Distance ring INSIDE the cursor ring (BACKGROUND).
 	rangeRing = f:CreateTexture(nil, "BACKGROUND")
 	rangeRing:SetTexture(THIN_FILE, "CLAMP")
 	rangeRing:SetPoint("CENTER", f, "CENTER")
 	rangeRing:SetSize(innerRangeSize(), innerRangeSize())
-	rangeRing:SetVertexColor(0.05, 0.95, 0.55, 1)
+	rangeRing:SetVertexColor(0.05, 0.95, 0.55, ringAlpha())
 	rangeRing:Hide()
 
-	-- Cast segments on the cursor ring.
 	for i = 1, NUM_CAST_SEGMENTS do
 		local segment = f:CreateTexture(nil, "ARTWORK")
 		segment:SetTexture(CAST_FILE, "CLAMP")
@@ -225,35 +395,17 @@ function ns.CreateRing()
 	ring:SetTexture(RING_FILE, "CLAMP")
 	ring:SetAllPoints()
 	local r, g, b = ns.RingColor()
-	ring:SetVertexColor(r, g, b, 1)
+	ring:SetVertexColor(r, g, b, ringAlpha())
 	ring:Show()
 
-	-- Yards OUTSIDE the cursor ring.
 	rangeLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
 	rangeLabel:SetTextColor(1, 0.92, 0.55)
+	rangeLabel:SetAlpha(ringAlpha())
 	rangeLabel:SetText("")
 
-	f:SetScript("OnUpdate", function(self)
-		if not cachedUILeft then
-			cachedUILeft, cachedUIBottom = UIParent:GetRect()
-			cachedScale = UIParent:GetEffectiveScale()
-		end
-
-		local x, y = GetCursorPosition()
-		local scale = cachedScale or UIParent:GetEffectiveScale()
-		x = x / scale - cachedUILeft
-		y = y / scale - cachedUIBottom
-		if x == lastCursorX and y == lastCursorY then
-			return
-		end
-		lastCursorX, lastCursorY = x, y
-
-		self:ClearAllPoints()
-		self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
-	end)
-
-	f:Show()
+	lastShown = nil
+	applyShown(ns.RingShouldShow())
 	if not createdOnce then
 		createdOnce = true
 		print("|cffd4a017Forever|r |cff66ccffRing|r: cursor ring on")
@@ -268,17 +420,21 @@ function ns.ApplyRingSettings()
 			return
 		end
 	end
-	if ns.db then
-		ns.db.enabled = true
+	if drive then
+		if ns.AddonOn() then
+			drive:Show()
+		else
+			drive:Hide()
+		end
 	end
 	local size = ringSize()
 	f:SetSize(size, size)
-	f:Show()
 	ring:SetAllPoints()
 	local r, g, b = ns.RingColor()
-	if r ~= lastRingR or g ~= lastRingG or b ~= lastRingB then
-		lastRingR, lastRingG, lastRingB = r, g, b
-		ring:SetVertexColor(r, g, b, 1)
+	local a = ringAlpha()
+	if r ~= lastRingR or g ~= lastRingG or b ~= lastRingB or a ~= lastRingA then
+		lastRingR, lastRingG, lastRingB, lastRingA = r, g, b, a
+		ring:SetVertexColor(r, g, b, a)
 	end
 	if ns.db and ns.db.showRing == false then
 		ring:Hide()
@@ -286,13 +442,21 @@ function ns.ApplyRingSettings()
 		ring:Show()
 	end
 	if rangeRing then
-		local inner = innerRangeSize()
-		rangeRing:SetSize(inner, inner)
+		rangeRing:SetSize(innerRangeSize(), innerRangeSize())
 	end
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
 		rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
+		rangeLabel:SetAlpha(a)
 	end
+	lastShown = nil
+	lastOverUI = nil
+	lastLit = -1
+	applyShown(ns.RingShouldShow())
+	if ns.UpdateRingCombat then
+		ns.UpdateRingCombat()
+	end
+	updateCastRing()
 end
 
 function ns.UpdateRingCombat()
@@ -302,17 +466,23 @@ function ns.UpdateRingCombat()
 			return
 		end
 	end
+	lastShown = nil
+	applyShown(ns.RingShouldShow())
+	if not ns.RingShouldShow() then
+		return
+	end
 	local showRange = not ns.db or ns.db.showRange ~= false
 	local showText = not ns.db or ns.db.showRangeText ~= false
 	local yards, minR, maxR
 	if showRange and ns.RangeYards then
 		yards, minR, maxR = ns.RangeYards()
 	end
+	local a = ringAlpha()
 	if showRange and yards and rangeRing then
 		local color = ns.RangeColor and ns.RangeColor(yards) or { 0.05, 0.95, 0.55 }
-		if color[1] ~= lastRangeR or color[2] ~= lastRangeG or color[3] ~= lastRangeB then
+		if color[1] ~= lastRangeR or color[2] ~= lastRangeG or color[3] ~= lastRangeB or lastRingA ~= a then
 			lastRangeR, lastRangeG, lastRangeB = color[1], color[2], color[3]
-			rangeRing:SetVertexColor(color[1], color[2], color[3], 1)
+			rangeRing:SetVertexColor(color[1], color[2], color[3], a)
 		end
 		if not lastHadRange then
 			rangeRing:Show()
@@ -330,6 +500,7 @@ function ns.UpdateRingCombat()
 				rangeLabel:SetText(text)
 				rangeLabel:Show()
 			end
+			rangeLabel:SetAlpha(a)
 		elseif rangeLabel and lastRangeText then
 			lastRangeText = nil
 			rangeLabel:SetText("")
@@ -348,7 +519,13 @@ function ns.UpdateRingCombat()
 end
 
 function ns.DebugRing()
-	ns.Print(string.format("frame=%s ring=%s", f and "yes" or "no", ring and "yes" or "no"))
+	ns.Print(string.format(
+		"frame=%s ring=%s on=%s combat=%s",
+		f and "yes" or "no",
+		ring and "yes" or "no",
+		ns.AddonOn() and "yes" or "no",
+		ns.InCombat() and "yes" or "no"
+	))
 end
 
 local loader = CreateFrame("Frame")
@@ -377,9 +554,20 @@ loader:SetScript("OnEvent", function(_, event, name)
 	if name ~= "player" then
 		return
 	end
+	if event == "UNIT_SPELLCAST_INTERRUPTED" or (event == "UNIT_SPELLCAST_FAILED" and (casting or lastLit > 0)) then
+		if ns.db and ns.db.showCast == false then
+			return
+		end
+		flashInterrupt()
+		return
+	end
 	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+		interrupted = false
 		casting = true
 		startCastTicker()
+		return
+	end
+	if interrupted then
 		return
 	end
 	casting = false

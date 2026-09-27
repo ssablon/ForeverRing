@@ -105,6 +105,9 @@ local function addSwitch(card, key, labelKey)
 		if ns.ApplyRingSettings then
 			ns.ApplyRingSettings()
 		end
+		if ns.UpdateRingCombat then
+			ns.UpdateRingCombat()
+		end
 		if win and win.paintSwatch then
 			win.paintSwatch()
 		end
@@ -132,6 +135,7 @@ local function addSlider(card, key, minV, maxV, fmtKey)
 	bar:SetPoint("TOPLEFT", 0, -16)
 	bar:SetPoint("TOPRIGHT", 0, -16)
 	bar:SetHeight(16)
+	bar:EnableMouse(true)
 	bar:SetBackdrop({
 		bgFile = "Interface\\Buttons\\WHITE8x8",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -147,35 +151,72 @@ local function addSlider(card, key, minV, maxV, fmtKey)
 	fill:SetVertexColor(1, 0.82, 0.2, 0.85)
 	fill:SetPoint("TOPLEFT", 3, -3)
 	fill:SetPoint("BOTTOMLEFT", 3, 3)
+	local function clampValue(value)
+		value = tonumber(value) or minV
+		if value < minV then
+			value = minV
+		end
+		if value > maxV then
+			value = maxV
+		end
+		return math.floor(value + 0.5)
+	end
+	local function apply(value)
+		ns.db[key] = clampValue(value)
+		if ns.ApplyRingSettings then
+			ns.ApplyRingSettings()
+		end
+		if ns.UpdateRingCombat then
+			ns.UpdateRingCombat()
+		end
+	end
 	local function render()
-		local value = tonumber(ns.db[key]) or minV
+		local value = clampValue(ns.db and ns.db[key])
 		label:SetText(string.format(ns.T(fmtKey), value))
+		local width = bar:GetWidth()
+		if not width or width < 8 then
+			return
+		end
 		local p = (value - minV) / math.max(1, maxV - minV)
-		fill:SetWidth(math.max(2, (bar:GetWidth() - 6) * p))
+		fill:SetWidth(math.max(2, (width - 6) * p))
+	end
+	local function setFromCursor(self)
+		local okL, left = pcall(self.GetLeft, self)
+		local okS, scale = pcall(self.GetEffectiveScale, self)
+		local okC, cx = pcall(GetCursorPosition)
+		left, scale, cx = tonumber(okL and left), tonumber(okS and scale) or 1, tonumber(okC and cx)
+		local width = self:GetWidth()
+		if not left or not cx or not width or width < 1 or scale == 0 then
+			return
+		end
+		local p = (cx / scale - left) / width
+		p = math.min(1, math.max(0, p))
+		apply(minV + p * (maxV - minV))
+		render()
 	end
 	bar:SetScript("OnMouseDown", function(self)
 		self._drag = true
+		setFromCursor(self)
 	end)
 	bar:SetScript("OnMouseUp", function(self)
+		if self._drag then
+			setFromCursor(self)
+		end
+		self._drag = false
+	end)
+	bar:SetScript("OnLeave", function(self)
+		if self._drag then
+			setFromCursor(self)
+		end
 		self._drag = false
 	end)
 	bar:SetScript("OnUpdate", function(self)
 		if not self._drag then
 			return
 		end
-		local okL, left = pcall(self.GetLeft, self)
-		local okS, scale = pcall(self.GetEffectiveScale, self)
-		local okC, cx = pcall(GetCursorPosition)
-		left, scale, cx = tonumber(okL and left), tonumber(okS and scale) or 1, tonumber(okC and cx)
-		if not left or not cx then
-			return
-		end
-		local p = (cx / scale - left) / math.max(1, self:GetWidth())
-		p = math.min(1, math.max(0, p))
-		ns.db[key] = math.floor(minV + p * (maxV - minV) + 0.5)
-		render()
-		ns.ApplyRingSettings()
+		setFromCursor(self)
 	end)
+	bar:SetScript("OnSizeChanged", render)
 	row:SetScript("OnShow", render)
 	row.refresh = render
 	table.insert(card.widgets, row)
@@ -308,7 +349,7 @@ local function ensure()
 		return win
 	end
 	win = CreateFrame("Frame", "ForeverRingOptions", UIParent, "BackdropTemplate")
-	win:SetSize(560, 540)
+	win:SetSize(560, 660)
 	win:SetPoint("CENTER")
 	win:SetBackdrop(PANEL)
 	win:SetBackdropColor(0.05, 0.05, 0.05, 0.96)
@@ -383,9 +424,10 @@ local function ensure()
 	infoPage:SetPoint("BOTTOMRIGHT", 0, 0)
 	win.infoPage = infoPage
 
-	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 236)
+	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 312)
 	addSwitch(ringCard, "showRing", "OPT_ENABLE_RING")
 	addSwitch(ringCard, "showOutOfCombat", "OPT_OUT_OF_COMBAT")
+	addSwitch(ringCard, "hideOverUI", "OPT_HIDE_OVER_UI")
 	addSwitch(ringCard, "classColor", "OPT_CLASS_COLOR")
 	local colorRow = CreateFrame("Frame", nil, ringCard)
 	colorRow:SetHeight(24)
@@ -474,6 +516,7 @@ local function ensure()
 	win.resetColor = resetColor
 	ringCard._y = ringCard._y - 28
 	addSlider(ringCard, "ringSize", 24, 128, "OPT_RING_SIZE")
+	addSlider(ringCard, "ringAlpha", 20, 100, "OPT_RING_ALPHA")
 
 	local castCard = makeCard(ringPage, "OPT_CARD_CAST", 288, -4, 256, 200)
 	addSwitch(castCard, "showCast", "OPT_ENABLE_CAST")
@@ -492,10 +535,24 @@ local function ensure()
 	end)
 	win.langBtn = langBtn
 
-	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -252, 528, 176)
+	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -324, 528, 236)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
 	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
 	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")
+	addSwitch(rangeCard, "hideDead", "OPT_HIDE_DEAD")
+	local srcLabel = rangeCard:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	srcLabel:SetPoint("TOPLEFT", 12, rangeCard._y)
+	srcLabel:SetTextColor(0.92, 0.92, 0.92)
+	win.rangeSrcLabel = srcLabel
+	local srcBtn = makeGoldBtn(rangeCard, 220, 22, ns.RangeSourceLabel and ns.RangeSourceLabel() or "Auto")
+	srcBtn:SetPoint("TOPLEFT", 12, rangeCard._y - 18)
+	srcBtn:SetScript("OnClick", function()
+		if ns.CycleRangeSource then
+			ns.CycleRangeSource()
+		end
+	end)
+	win.rangeSrcBtn = srcBtn
+	rangeCard._y = rangeCard._y - 46
 	addSlider(rangeCard, "rangeGap", 8, 40, "OPT_RANGE_GAP")
 
 	local about = makeCard(infoPage, "OPT_CARD_ABOUT", 16, -4, 528, 176)
@@ -576,6 +633,12 @@ function ns.RelocalizeOptions()
 	end
 	if win.langBtn and win.langBtn.label and ns.LocaleLabel then
 		win.langBtn.label:SetText(ns.LocaleLabel())
+	end
+	if win.rangeSrcLabel then
+		win.rangeSrcLabel:SetText(ns.T("OPT_RANGE_UNIT"))
+	end
+	if win.rangeSrcBtn and win.rangeSrcBtn.label and ns.RangeSourceLabel then
+		win.rangeSrcBtn.label:SetText(ns.RangeSourceLabel())
 	end
 	if win.colorLabel then
 		win.colorLabel:SetText(ns.T("OPT_RING_COLOR"))

@@ -13,6 +13,9 @@ local defaults = {
 	classColor = true,
 	ringSize = 48,
 	rangeGap = 18,
+	ringAlpha = 100,
+	hideOverUI = true,
+	rangeSource = "auto",
 	ringColor = { 1, 0.82, 0.2 },
 	showMinimap = true,
 	minimapAngle = 140,
@@ -35,7 +38,6 @@ end
 
 local function start()
 	ForeverRingDB = applyDefaults(ForeverRingDB)
-	ForeverRingDB.enabled = true
 	ns.db = ForeverRingDB
 	if ns.CreateRing then
 		local ok, err = pcall(ns.CreateRing)
@@ -66,10 +68,12 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_TARGET_CHANGED")
-frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("UI_SCALE_CHANGED")
-frame:RegisterEvent("DISPLAY_SIZE_CHANGED")
+	frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+	frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+	frame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+	pcall(frame.RegisterEvent, frame, "PLAYER_FOCUS_CHANGED")
+	frame:RegisterEvent("UI_SCALE_CHANGED")
+	frame:RegisterEvent("DISPLAY_SIZE_CHANGED")
 frame:SetScript("OnEvent", function(_, event, name)
 	if event == "ADDON_LOADED" and name == addonName then
 		start()
@@ -96,7 +100,7 @@ frame:SetScript("OnEvent", function(_, event, name)
 		if ns.ClearRingRect then
 			pcall(ns.ClearRingRect)
 		end
-	elseif event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+	elseif event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" or event == "UPDATE_MOUSEOVER_UNIT" or event == "PLAYER_FOCUS_CHANGED" then
 		if ns.UpdateRingCombat then
 			pcall(ns.UpdateRingCombat)
 		end
