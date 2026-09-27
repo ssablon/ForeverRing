@@ -12,7 +12,7 @@
 ## Notes-koKR: 마우스 주변 커서 고리와 대상 거리. 클라이언트 언어를 따름. 11개 언어.
 ## Notes-zhCN: 鼠标圆环与目标距离。跟随游戏客户端语言。11 种语言。
 ## Notes-zhTW: 滑鼠圓環與目標距離。跟隨遊戲客戶端語言。11 種語言。
-## Version: 1.0.4
+## Version: 1.0.5
 ## Author: Vohnka
 ## IconTexture: Interface\AddOns\ForeverRing\images\logo.tga
 ## Category: WoW Forever

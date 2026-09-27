@@ -1,3 +1,8 @@
+1.0.5
+
+2026-09-27
+- The inner range circle stays on the same center as the cursor ring.
+
 1.0.4
 
 2026-09-27

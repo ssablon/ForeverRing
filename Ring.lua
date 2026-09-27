@@ -87,10 +87,7 @@ local function setRingTex(tex, file)
 	if not tex or not file then
 		return
 	end
-	local ok = pcall(tex.SetTexture, tex, file, "CLAMP", "CLAMP", "NEAREST")
-	if not ok then
-		tex:SetTexture(file, "CLAMP")
-	end
+	tex:SetTexture(file, "CLAMP")
 end
 
 local function ringSize()
@@ -104,7 +101,29 @@ end
 local function innerRangeSize()
 	local size = ringSize()
 	local gap = rangeGap()
-	return math.max(16, size - gap)
+	local inner = math.max(16, size - gap)
+	if inner % 2 ~= size % 2 then
+		inner = inner + 1
+	end
+	return inner
+end
+
+-- Same frame as the cursor ring. Zoom the texture out so the smaller
+-- circle stays on the same center (no second size / pixel snap).
+local function applyRangeCenter()
+	if not rangeRing or not f then
+		return
+	end
+	rangeRing:ClearAllPoints()
+	rangeRing:SetAllPoints(f)
+	local size = ringSize()
+	local inner = innerRangeSize()
+	if inner >= size then
+		pcall(rangeRing.SetTexCoord, rangeRing, 0, 1, 0, 1)
+		return
+	end
+	local pad = (size / inner - 1) * 0.5
+	pcall(rangeRing.SetTexCoord, rangeRing, -pad, 1 + pad, -pad, 1 + pad)
 end
 
 local function ringAlpha()
@@ -330,8 +349,8 @@ local function followCursor()
 	end
 	local x, y = GetCursorPosition()
 	local scale = cachedScale or UIParent:GetEffectiveScale()
-	x = x / scale - cachedUILeft
-	y = y / scale - cachedUIBottom
+	x = math.floor(x / scale - cachedUILeft + 0.5)
+	y = math.floor(y / scale - cachedUIBottom + 0.5)
 	if x == lastCursorX and y == lastCursorY then
 		return
 	end
@@ -387,9 +406,8 @@ function ns.CreateRing()
 
 	rangeRing = f:CreateTexture(nil, "BACKGROUND")
 	setRingTex(rangeRing, THIN_FILE)
-	rangeRing:SetPoint("CENTER", f, "CENTER")
-	rangeRing:SetSize(innerRangeSize(), innerRangeSize())
 	rangeRing:SetVertexColor(0.05, 0.95, 0.55, ringAlpha())
+	applyRangeCenter()
 	rangeRing:Hide()
 
 	for i = 1, NUM_CAST_SEGMENTS do
@@ -451,9 +469,7 @@ function ns.ApplyRingSettings()
 	else
 		ring:Show()
 	end
-	if rangeRing then
-		rangeRing:SetSize(innerRangeSize(), innerRangeSize())
-	end
+	applyRangeCenter()
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
 		rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)

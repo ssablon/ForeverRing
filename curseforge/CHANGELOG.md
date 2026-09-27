@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- The inner range circle stays on the same center as the cursor ring.
+
 ## 1.0.4
 
 - Cursor ring has a hard edge. The dark outer halo on bright class colors (mage) is gone. Not mana or energy.

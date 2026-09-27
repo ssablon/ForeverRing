@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image
 
 SIZE = 256
-CX = CY = SIZE / 2
+CX = CY = (SIZE - 1) / 2
 ROOT = Path(__file__).resolve().parents[1]
 WHITE = (255, 255, 255, 255)
 CLEAR = (255, 255, 255, 0)
