@@ -1,3 +1,8 @@
+1.1.2
+
+2026-09-27
+- Resource ring removed. Cursor and range rings only, as before that feature.
+
 1.1.1
 
 2026-09-27

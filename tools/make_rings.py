@@ -12,8 +12,6 @@ CLEAR = (255, 255, 255, 0)
 STROKE = 16
 CLASS_OUTER = 92
 CLASS_INNER = CLASS_OUTER - STROKE
-POWER_INNER = CLASS_OUTER
-POWER_OUTER = POWER_INNER + STROKE
 
 
 def donut(outer, inner):
@@ -41,6 +39,4 @@ def save(img, name):
 
 
 save(donut(CLASS_OUTER, CLASS_INNER), "ring.tga")
-save(donut(POWER_OUTER, POWER_INNER), "power.tga")
-# Range is drawn smaller, so the stroke is wider in the texture.
 save(donut(124, 98), "thin_ring.tga")

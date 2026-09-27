@@ -2,7 +2,6 @@ local addonName, ns = ...
 
 local RING_FILE = "Interface\\AddOns\\ForeverRing\\ring.tga"
 local THIN_FILE = "Interface\\AddOns\\ForeverRing\\thin_ring.tga"
-local POWER_FILE = "Interface\\AddOns\\ForeverRing\\power.tga"
 local CAST_FILE = "Interface\\AddOns\\ForeverRing\\cast_segment.tga"
 
 local NUM_CAST_SEGMENTS = 48
@@ -21,15 +20,13 @@ local CLASS_COLORS = {
 	DRUID = { 1.00, 0.49, 0.04 },
 }
 
-local drive, f, ring, rangeHolder, rangeRing, powerHolder, powerRing, rangeLabel
+local drive, f, ring, rangeHolder, rangeRing, rangeLabel
 local castSegments = {}
 local cachedUILeft, cachedUIBottom, cachedScale
 local lastCursorX, lastCursorY
 local lastLit = -1
 local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
 local lastRingR, lastRingG, lastRingB, lastRingA
-local lastPowerSize, lastPowerR, lastPowerG, lastPowerB, lastPowerA, lastPowerShow
-local lastPowerPct = 1
 local createdOnce = false
 local casting = false
 local interrupted = false
@@ -86,13 +83,6 @@ function ns.AddonOn()
 	return not ns.db or ns.db.enabled ~= false
 end
 
-local POWER_COLOR = {
-	[0] = { 0.20, 0.45, 1.00 },
-	[1] = { 0.90, 0.10, 0.10 },
-	[2] = { 1.00, 0.50, 0.25 },
-	[3] = { 1.00, 0.96, 0.20 },
-}
-
 local function setRingTex(tex, file)
 	if not tex or not file then
 		return
@@ -147,22 +137,6 @@ local function applyRangeCenter()
 	end
 end
 
-local function powerColor(ptype, token)
-	if PowerBarColor then
-		local pack = (token and PowerBarColor[token]) or PowerBarColor[ptype]
-		if type(pack) == "table" then
-			local r = pack.r or pack[1]
-			local g = pack.g or pack[2]
-			local b = pack.b or pack[3]
-			if r and g and b then
-				return r, g, b
-			end
-		end
-	end
-	local pack = POWER_COLOR[ptype] or POWER_COLOR[0]
-	return pack[1], pack[2], pack[3]
-end
-
 local function ringAlpha()
 	local v = tonumber(ns.db and ns.db.ringAlpha) or 100
 	if v > 1 then
@@ -175,130 +149,6 @@ local function ringAlpha()
 		return 1
 	end
 	return v
-end
-
-local function readableNum(value)
-	if value == nil then
-		return nil
-	end
-	if issecretvalue and issecretvalue(value) then
-		return nil
-	end
-	if canaccessvalue and not canaccessvalue(value) then
-		return nil
-	end
-	return tonumber(value)
-end
-
-local function readPower(ptype)
-	local okC, cur, okM, maxp
-	if ptype then
-		okC, cur = pcall(UnitPower, "player", ptype)
-		okM, maxp = pcall(UnitPowerMax, "player", ptype)
-	else
-		okC, cur = pcall(UnitPower, "player")
-		okM, maxp = pcall(UnitPowerMax, "player")
-	end
-	return readableNum(okC and cur), readableNum(okM and maxp)
-end
-
-local function readStatusBar(bar)
-	if not bar or not bar.GetValue then
-		return nil, nil
-	end
-	local okV, cur = pcall(bar.GetValue, bar)
-	local minv, maxv
-	if bar.GetMinMaxValues then
-		local okM, a, b = pcall(bar.GetMinMaxValues, bar)
-		if okM then
-			minv, maxv = a, b
-		end
-	end
-	cur = readableNum(okV and cur)
-	minv = readableNum(minv) or 0
-	maxv = readableNum(maxv)
-	if cur and maxv and maxv > minv then
-		return cur - minv, maxv - minv
-	end
-	return nil, nil
-end
-
-local function framePower()
-	local pf = PlayerFrame
-	if not pf then
-		return nil, nil
-	end
-	local bars = { pf.manabar, pf.powerBar, pf.PowerBar, pf.ManaBar }
-	local content = pf.PlayerFrameContent and pf.PlayerFrameContent.PlayerFrameContentMain
-	if content then
-		local area = content.ManaBarArea
-		if area then
-			bars[#bars + 1] = area.ManaBar
-			bars[#bars + 1] = area.manaBar
-		end
-	end
-	for i = 1, #bars do
-		local cur, maxp = readStatusBar(bars[i])
-		if cur then
-			return cur, maxp
-		end
-	end
-	return nil, nil
-end
-
-local function playerPower()
-	local okT, ptype, token = pcall(UnitPowerType, "player")
-	ptype = (okT and tonumber(ptype)) or 0
-	local cur, maxp = readPower(ptype)
-	if not cur or not maxp then
-		cur, maxp = readPower()
-	end
-	if not cur or not maxp then
-		cur, maxp = framePower()
-	end
-	if not maxp or maxp <= 0 then
-		return lastPowerPct, ptype, token
-	end
-	lastPowerPct = math.max(0, math.min(1, (cur or 0) / maxp))
-	return lastPowerPct, ptype, token
-end
-
-local CLASS_TEX_OUTER = 92
-local POWER_TEX_STROKE = 16
-local POWER_TEX_OUTER = CLASS_TEX_OUTER + POWER_TEX_STROKE
-
-local function updatePowerRing()
-	if not powerHolder or not powerRing then
-		return
-	end
-	local show = ns.RingShouldShow() and (not ns.db or ns.db.showPower ~= false)
-	if not show then
-		if lastPowerShow then
-			powerHolder:Hide()
-			lastPowerShow = false
-		end
-		return
-	end
-	local pct, ptype, token = playerPower()
-	local r, g, b = powerColor(ptype, token)
-	local a = ringAlpha()
-	local size = ringSize()
-	local sz = evenPx(size * (CLASS_TEX_OUTER + POWER_TEX_STROKE * pct) / POWER_TEX_OUTER)
-	if sz ~= lastPowerSize then
-		lastPowerSize = sz
-		placeCenter(powerHolder, f, sz)
-		powerRing:ClearAllPoints()
-		powerRing:SetAllPoints(powerHolder)
-	end
-	if r ~= lastPowerR or g ~= lastPowerG or b ~= lastPowerB or a ~= lastPowerA then
-		lastPowerR, lastPowerG, lastPowerB, lastPowerA = r, g, b, a
-		powerRing:SetVertexColor(r, g, b, a)
-	end
-	if not lastPowerShow then
-		powerHolder:Show()
-		powerRing:Show()
-		lastPowerShow = true
-	end
 end
 
 local function mouseFrame()
@@ -536,10 +386,6 @@ local function tickDrive()
 	local show = ns.RingShouldShow()
 	if show then
 		followCursor()
-		updatePowerRing()
-	elseif lastPowerShow and powerHolder then
-		powerHolder:Hide()
-		lastPowerShow = false
 	end
 	applyShown(show)
 end
@@ -576,13 +422,6 @@ function ns.CreateRing()
 	rangeRing:SetVertexColor(0.05, 0.95, 0.55, ringAlpha())
 	applyRangeCenter()
 	rangeHolder:Hide()
-
-	powerHolder = CreateFrame("Frame", nil, f)
-	powerHolder:EnableMouse(false)
-	powerRing = powerHolder:CreateTexture(nil, "BACKGROUND")
-	setRingTex(powerRing, POWER_FILE)
-	powerRing:SetVertexColor(0.20, 0.45, 1.00, ringAlpha())
-	powerHolder:Hide()
 
 	for i = 1, NUM_CAST_SEGMENTS do
 		local segment = f:CreateTexture(nil, "ARTWORK")
@@ -648,10 +487,6 @@ function ns.ApplyRingSettings()
 		ring:Show()
 	end
 	applyRangeCenter()
-	lastPowerShow = nil
-	lastPowerSize = nil
-	lastPowerA = nil
-	updatePowerRing()
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
 		rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
@@ -731,7 +566,6 @@ function ns.UpdateRingCombat()
 			rangeLabel:SetText("")
 		end
 	end
-	updatePowerRing()
 end
 
 function ns.DebugRing()
@@ -755,18 +589,9 @@ loader:RegisterEvent("UNIT_SPELLCAST_FAILED")
 loader:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
 loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
 loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
-for _, ev in ipairs({ "UNIT_POWER_UPDATE", "UNIT_POWER_FREQUENT", "UNIT_POWER", "UNIT_DISPLAYPOWER", "UNIT_MAXPOWER" }) do
-	pcall(loader.RegisterEvent, loader, ev)
-end
 loader:SetScript("OnEvent", function(_, event, name)
 	if event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
 		cachedUILeft, cachedUIBottom = nil, nil
-		return
-	end
-	if event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" or event == "UNIT_POWER" or event == "UNIT_DISPLAYPOWER" or event == "UNIT_MAXPOWER" then
-		if name == "player" then
-			updatePowerRing()
-		end
 		return
 	end
 	if event == "ADDON_LOADED" and name ~= addonName then

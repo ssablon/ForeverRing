@@ -6,13 +6,12 @@ local defaults = {
 	showCast = true,
 	showRange = true,
 	showRangeText = true,
-	showPower = true,
 	showOutOfCombat = true,
 	onlyCombat = false,
 	onlyEnemy = false,
 	hideDead = true,
 	classColor = true,
-	ringSize = 64,
+	ringSize = 48,
 	rangeGap = 18,
 	ringAlpha = 100,
 	hideOverUI = true,
@@ -93,7 +92,7 @@ local function start()
 			end
 		end)
 	end
-	local ver = "1.1.1"
+	local ver = "1.1.2"
 	if C_AddOns and C_AddOns.GetAddOnMetadata then
 		local ok, value = pcall(C_AddOns.GetAddOnMetadata, addonName, "Version")
 		if ok and value then

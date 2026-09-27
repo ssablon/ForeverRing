@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Resource ring removed. Cursor and range rings only, as before that feature.
+
 ## 1.1.1
 
 - Class and range rings are half as thick. The resource ring shrinks and grows with mana, rage, or energy.
