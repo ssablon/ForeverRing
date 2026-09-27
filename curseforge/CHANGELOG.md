@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- Cursor ring is one thin circle. The extra inner rim and the center dot are removed from the texture.
+
 ## 1.0.5
 
 - The inner range circle stays on the same center as the cursor ring.

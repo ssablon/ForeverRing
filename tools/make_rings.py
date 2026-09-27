@@ -36,5 +36,6 @@ def save(img, name):
 		print("wrote", path, path.stat().st_size)
 
 
-save(donut(118, 92, 7), "ring.tga")
+# One stroke, no center dot. A thick donut reads as two circles on mage.
+save(donut(118, 104, 0), "ring.tga")
 save(donut(122, 108, 0), "thin_ring.tga")
