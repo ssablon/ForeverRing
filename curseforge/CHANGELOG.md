@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9
+
+- Resource ring sits outside the class ring, same thickness, glued to it.
+
 ## 1.0.8
 
 - Resource ring switch is on the Cursor card. The ring stays visible when the client hides power values.

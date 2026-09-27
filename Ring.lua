@@ -2,6 +2,7 @@ local addonName, ns = ...
 
 local RING_FILE = "Interface\\AddOns\\ForeverRing\\ring.tga"
 local THIN_FILE = "Interface\\AddOns\\ForeverRing\\thin_ring.tga"
+local POWER_FILE = "Interface\\AddOns\\ForeverRing\\power.tga"
 local CAST_FILE = "Interface\\AddOns\\ForeverRing\\cast_segment.tga"
 
 local NUM_CAST_SEGMENTS = 48
@@ -27,7 +28,7 @@ local lastCursorX, lastCursorY
 local lastLit = -1
 local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
 local lastRingR, lastRingG, lastRingB, lastRingA
-local lastPowerSize, lastPowerR, lastPowerG, lastPowerB, lastPowerShow
+local lastPowerR, lastPowerG, lastPowerB, lastPowerA, lastPowerShow
 local createdOnce = false
 local casting = false
 local interrupted = false
@@ -227,21 +228,12 @@ local function updatePowerRing()
 	end
 	local pct, ptype, token = playerPower()
 	local r, g, b = powerColor(ptype, token)
-	local a = ringAlpha()
-	local maxS = evenPx(math.max(18, innerRangeSize() - 4))
-	local minS = evenPx(math.max(14, maxS * 0.45))
-	if minS > maxS then
-		minS = maxS
-	end
-	local sz = evenPx(minS + (maxS - minS) * pct)
-	if sz ~= lastPowerSize then
-		lastPowerSize = sz
-		placeCenter(powerHolder, f, sz)
-		powerRing:ClearAllPoints()
-		powerRing:SetAllPoints(powerHolder)
-	end
-	if r ~= lastPowerR or g ~= lastPowerG or b ~= lastPowerB or lastRingA ~= a then
-		lastPowerR, lastPowerG, lastPowerB = r, g, b
+	local a = ringAlpha() * (0.22 + 0.78 * pct)
+	placeCenter(powerHolder, f, ringSize())
+	powerRing:ClearAllPoints()
+	powerRing:SetAllPoints(powerHolder)
+	if r ~= lastPowerR or g ~= lastPowerG or b ~= lastPowerB or a ~= lastPowerA then
+		lastPowerR, lastPowerG, lastPowerB, lastPowerA = r, g, b, a
 		powerRing:SetVertexColor(r, g, b, a)
 	end
 	if not lastPowerShow then
@@ -529,8 +521,8 @@ function ns.CreateRing()
 
 	powerHolder = CreateFrame("Frame", nil, f)
 	powerHolder:EnableMouse(false)
-	powerRing = powerHolder:CreateTexture(nil, "ARTWORK")
-	setRingTex(powerRing, THIN_FILE)
+	powerRing = powerHolder:CreateTexture(nil, "BACKGROUND")
+	setRingTex(powerRing, POWER_FILE)
 	powerRing:SetVertexColor(0.20, 0.45, 1.00, ringAlpha())
 	powerHolder:Hide()
 
@@ -598,8 +590,8 @@ function ns.ApplyRingSettings()
 		ring:Show()
 	end
 	applyRangeCenter()
-	lastPowerSize = nil
 	lastPowerShow = nil
+	lastPowerA = nil
 	updatePowerRing()
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
