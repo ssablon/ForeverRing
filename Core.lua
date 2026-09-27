@@ -16,6 +16,7 @@ local defaults = {
 	ringColor = { 1, 0.82, 0.2 },
 	showMinimap = true,
 	minimapAngle = 140,
+	locale = "auto",
 }
 
 local function applyDefaults(db)

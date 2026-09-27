@@ -43,6 +43,7 @@ L.enUS = {
 	MINIMAP_L = "Left-click: options",
 	MINIMAP_R = "Right-click: show or hide the rings. Drag to move.",
 	OPT_MINIMAP = "Show minimap button",
+	OPT_LANG = "Language",
 }
 
 L.frFR = {
@@ -83,6 +84,7 @@ L.frFR = {
 	MINIMAP_L = "Clic gauche : options",
 	MINIMAP_R = "Clic droit : afficher ou cacher les anneaux. Glisser pour déplacer.",
 	OPT_MINIMAP = "Bouton de la minimap",
+	OPT_LANG = "Langue",
 }
 
 L.deDE = {
@@ -123,6 +125,7 @@ L.deDE = {
 	MINIMAP_L = "Linksklick: Optionen",
 	MINIMAP_R = "Rechtsklick: Ringe ein- oder ausblenden. Ziehen zum Verschieben.",
 	OPT_MINIMAP = "Minikarten-Button anzeigen",
+	OPT_LANG = "Sprache",
 }
 
 L.esES = {
@@ -163,6 +166,7 @@ L.esES = {
 	MINIMAP_L = "Clic izquierdo: opciones",
 	MINIMAP_R = "Clic derecho: mostrar u ocultar los anillos. Arrastra para mover.",
 	OPT_MINIMAP = "Mostrar botón del minimapa",
+	OPT_LANG = "Idioma",
 }
 
 L.ruRU = {
@@ -203,6 +207,7 @@ L.ruRU = {
 	MINIMAP_L = "ЛКМ: настройки",
 	MINIMAP_R = "ПКМ: показать или скрыть кольца. Перетащите, чтобы сдвинуть.",
 	OPT_MINIMAP = "Кнопка у миникарты",
+	OPT_LANG = "Язык",
 }
 
 L.zhCN = {
@@ -243,6 +248,7 @@ L.zhCN = {
 	MINIMAP_L = "左键：选项",
 	MINIMAP_R = "右键：显示或隐藏圆环。拖动可移动。",
 	OPT_MINIMAP = "显示小地图按钮",
+	OPT_LANG = "语言",
 }
 
 L.zhTW = {
@@ -283,6 +289,7 @@ L.zhTW = {
 	MINIMAP_L = "左鍵：選項",
 	MINIMAP_R = "右鍵：顯示或隱藏圓環。拖曳可移動。",
 	OPT_MINIMAP = "顯示小地圖按鈕",
+	OPT_LANG = "語言",
 }
 
 L.ptBR = {
@@ -323,6 +330,7 @@ L.ptBR = {
 	MINIMAP_L = "Clique esquerdo: opções",
 	MINIMAP_R = "Clique direito: mostrar ou ocultar os anéis. Arraste para mover.",
 	OPT_MINIMAP = "Mostrar botão do minimapa",
+	OPT_LANG = "Idioma",
 }
 
 L.itIT = {
@@ -363,6 +371,7 @@ L.itIT = {
 	MINIMAP_L = "Clic sinistro: opzioni",
 	MINIMAP_R = "Clic destro: mostra o nascondi gli anelli. Trascina per spostare.",
 	OPT_MINIMAP = "Mostra il pulsante della minimappa",
+	OPT_LANG = "Lingua",
 }
 
 L.koKR = {
@@ -403,6 +412,7 @@ L.koKR = {
 	MINIMAP_L = "왼쪽 클릭: 설정",
 	MINIMAP_R = "오른쪽 클릭: 고리 표시 또는 숨기기. 드래그하여 이동.",
 	OPT_MINIMAP = "미니맵 버튼 표시",
+	OPT_LANG = "언어",
 }
 
 local function withFallback(map)
@@ -427,6 +437,23 @@ local packs = {
 	koKR = withFallback(L.koKR),
 }
 
+local ORDER = { "auto", "enUS", "frFR", "deDE", "esES", "ruRU", "zhCN", "zhTW", "ptBR", "itIT", "koKR" }
+local NAMES = {
+	auto = "Auto",
+	enUS = "English",
+	enGB = "English",
+	frFR = "Français",
+	deDE = "Deutsch",
+	esES = "Español",
+	esMX = "Español",
+	ruRU = "Русский",
+	zhCN = "简体中文",
+	zhTW = "繁體中文",
+	ptBR = "Português",
+	itIT = "Italiano",
+	koKR = "한국어",
+}
+
 function ns.ClientLocale()
 	local ok, loc = pcall(GetLocale)
 	loc = (ok and loc) or "enUS"
@@ -436,7 +463,61 @@ function ns.ClientLocale()
 	return loc
 end
 
+local function resolveLocale(choice)
+	if choice == nil or choice == "" or choice == "auto" then
+		choice = ns.ClientLocale()
+	end
+	if choice == "enGB" then
+		choice = "enUS"
+	end
+	if choice == "esMX" then
+		choice = "esES"
+	end
+	if not packs[choice] then
+		choice = "enUS"
+	end
+	return choice
+end
+
+function ns.ActiveLocale()
+	local choice = ns.db and ns.db.locale
+	return resolveLocale(choice)
+end
+
+function ns.LocaleLabel(code)
+	code = code or (ns.db and ns.db.locale) or "auto"
+	if code == "" then
+		code = "auto"
+	end
+	if code == "auto" then
+		local client = NAMES[ns.ClientLocale()] or ns.ClientLocale()
+		return "Auto (" .. client .. ")"
+	end
+	return NAMES[code] or code
+end
+
+function ns.CycleLocale()
+	if not ns.db then
+		return
+	end
+	local cur = ns.db.locale
+	if cur == nil or cur == "" then
+		cur = "auto"
+	end
+	local idx = 1
+	for i, code in ipairs(ORDER) do
+		if code == cur then
+			idx = i
+			break
+		end
+	end
+	ns.db.locale = ORDER[(idx % #ORDER) + 1]
+	if ns.RelocalizeOptions then
+		ns.RelocalizeOptions()
+	end
+end
+
 function ns.T(key)
-	local pack = packs[ns.ClientLocale()] or L.enUS
+	local pack = packs[ns.ActiveLocale()] or L.enUS
 	return pack[key] or L.enUS[key] or key
 end

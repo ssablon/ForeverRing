@@ -1,3 +1,7 @@
+# 0.1.6
+
+- Language option: Auto follows the game client, or pick any of the 11 languages.
+
 # 0.1.5
 
 - Credits live on the Info tab (About, commands, site and Discord), like Forever Rotation.

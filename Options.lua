@@ -390,6 +390,18 @@ local function ensure()
 	addSwitch(castCard, "showCast", "OPT_ENABLE_CAST")
 	addSwitch(castCard, "onlyCombat", "OPT_ONLY_COMBAT")
 	addSwitch(castCard, "showMinimap", "OPT_MINIMAP")
+	local langLabel = castCard:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	langLabel:SetPoint("TOPLEFT", 12, castCard._y)
+	langLabel:SetTextColor(0.92, 0.92, 0.92)
+	win.langLabel = langLabel
+	local langBtn = makeGoldBtn(castCard, 170, 22, ns.LocaleLabel and ns.LocaleLabel() or "Auto")
+	langBtn:SetPoint("TOPLEFT", 12, castCard._y - 18)
+	langBtn:SetScript("OnClick", function()
+		if ns.CycleLocale then
+			ns.CycleLocale()
+		end
+	end)
+	win.langBtn = langBtn
 
 	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -216, 528, 140)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
@@ -469,6 +481,12 @@ function ns.RelocalizeOptions()
 	end
 	if win.sub then
 		win.sub:SetText(ns.T("TITLE_SUB"))
+	end
+	if win.langLabel then
+		win.langLabel:SetText(ns.T("OPT_LANG"))
+	end
+	if win.langBtn and win.langBtn.label and ns.LocaleLabel then
+		win.langBtn.label:SetText(ns.LocaleLabel())
 	end
 	if win.aboutBody then
 		win.aboutBody:SetText(ns.T("INFO_ABOUT"))

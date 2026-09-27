@@ -1,3 +1,8 @@
+0.1.6
+
+2026-09-27
+- Language option: Auto follows the game client, or pick any of the 11 languages.
+
 0.1.5
 
 2026-09-27
