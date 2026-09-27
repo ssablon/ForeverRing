@@ -228,7 +228,7 @@ local function updatePowerRing()
 	end
 	local pct, ptype, token = playerPower()
 	local r, g, b = powerColor(ptype, token)
-	local a = ringAlpha() * (0.22 + 0.78 * pct)
+	local a = ringAlpha() * (0.55 + 0.45 * pct)
 	placeCenter(powerHolder, f, ringSize())
 	powerRing:ClearAllPoints()
 	powerRing:SetAllPoints(powerHolder)

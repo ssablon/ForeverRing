@@ -12,7 +12,7 @@ local defaults = {
 	onlyEnemy = false,
 	hideDead = true,
 	classColor = true,
-	ringSize = 48,
+	ringSize = 64,
 	rangeGap = 18,
 	ringAlpha = 100,
 	hideOverUI = true,
@@ -93,7 +93,7 @@ local function start()
 			end
 		end)
 	end
-	local ver = "1.0.9"
+	local ver = "1.1.0"
 	if C_AddOns and C_AddOns.GetAddOnMetadata then
 		local ok, value = pcall(C_AddOns.GetAddOnMetadata, addonName, "Version")
 		if ok and value then

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- Rings redesigned: much thicker strokes so class, range, and resource stay readable. Resource ring still sits outside the class ring.
+
 ## 1.0.9
 
 - Resource ring sits outside the class ring, same thickness, glued to it.

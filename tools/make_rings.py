@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""White hard-edge rings. Soft alpha + class tint looks like a dark halo (mage)."""
+"""Bold white rings. Thick hard strokes stay visible after SetVertexColor."""
 from pathlib import Path
 
 from PIL import Image
@@ -9,21 +9,25 @@ CX = CY = (SIZE - 1) / 2
 ROOT = Path(__file__).resolve().parents[1]
 WHITE = (255, 255, 255, 255)
 CLEAR = (255, 255, 255, 0)
+STROKE = 32
+CLASS_OUTER = 92
+CLASS_INNER = CLASS_OUTER - STROKE
+POWER_INNER = CLASS_OUTER
+POWER_OUTER = POWER_INNER + STROKE
 
 
-def donut(outer, inner, dot=0):
+def donut(outer, inner):
 	img = Image.new("RGBA", (SIZE, SIZE), CLEAR)
 	px = img.load()
 	outer2 = outer * outer
 	inner2 = inner * inner
-	dot2 = dot * dot
 	for y in range(SIZE):
 		dy = (y + 0.5) - CY
 		dy2 = dy * dy
 		for x in range(SIZE):
 			dx = (x + 0.5) - CX
 			r2 = dx * dx + dy2
-			if (inner2 <= r2 <= outer2) or (dot > 0 and r2 <= dot2):
+			if inner2 <= r2 <= outer2:
 				px[x, y] = WHITE
 	return img
 
@@ -36,7 +40,7 @@ def save(img, name):
 		print("wrote", path, path.stat().st_size)
 
 
-# Same 14px stroke. Class 108–94, resource glued outside 122–108.
-save(donut(108, 94, 0), "ring.tga")
-save(donut(122, 108, 0), "power.tga")
-save(donut(122, 108, 0), "thin_ring.tga")
+save(donut(CLASS_OUTER, CLASS_INNER), "ring.tga")
+save(donut(POWER_OUTER, POWER_INNER), "power.tga")
+# Range is drawn smaller, so the stroke is wider in the texture.
+save(donut(124, 72), "thin_ring.tga")
