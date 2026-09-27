@@ -1,3 +1,7 @@
+# 0.1.7
+
+- Cursor ring follows the mouse the same way as CursorRing (raw cursor math, ring.tga + CLAMP). Class color by default, or pick a custom color in options.
+
 # 0.1.6
 
 - Language option: Auto follows the game client, or pick any of the 11 languages.

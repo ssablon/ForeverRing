@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. Un frame `TOOLTIP` suit `GetCursorPosition`. Un anneau intérieur (couleur de classe) marque la souris. Un anneau extérieur change de couleur et de remplissage selon la distance de la cible (`CheckInteractDistance` + quelques `IsSpellInRange`).
+Client camelot `16001`. Un frame `TOOLTIP` suit le curseur comme CursorRing : `GetCursorPosition` / `UIParent:GetEffectiveScale` moins `UIParent:GetRect`, sans filtrer les secret values. Texture `ring.tga` + `CLAMP` à la racine de l'addon (copie aussi dans `images\`). Couleur de classe par défaut (`RAID_CLASS_COLORS`), ou couleur manuelle dans les options. Un anneau extérieur (`thin_ring.tga`) change selon la distance de la cible.
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 

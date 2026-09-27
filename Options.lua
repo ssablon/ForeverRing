@@ -105,6 +105,9 @@ local function addSwitch(card, key, labelKey)
 		if ns.ApplyRingSettings then
 			ns.ApplyRingSettings()
 		end
+		if win and win.paintSwatch then
+			win.paintSwatch()
+		end
 		if ns.ApplyMinimap then
 			ns.ApplyMinimap()
 		end
@@ -305,7 +308,7 @@ local function ensure()
 		return win
 	end
 	win = CreateFrame("Frame", "ForeverRingOptions", UIParent, "BackdropTemplate")
-	win:SetSize(560, 460)
+	win:SetSize(560, 500)
 	win:SetPoint("CENTER")
 	win:SetBackdrop(PANEL)
 	win:SetBackdropColor(0.05, 0.05, 0.05, 0.96)
@@ -380,10 +383,96 @@ local function ensure()
 	infoPage:SetPoint("BOTTOMRIGHT", 0, 0)
 	win.infoPage = infoPage
 
-	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 200)
+	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 236)
 	addSwitch(ringCard, "showRing", "OPT_ENABLE_RING")
 	addSwitch(ringCard, "showOutOfCombat", "OPT_OUT_OF_COMBAT")
 	addSwitch(ringCard, "classColor", "OPT_CLASS_COLOR")
+	local colorRow = CreateFrame("Frame", nil, ringCard)
+	colorRow:SetHeight(24)
+	colorRow:SetPoint("TOPLEFT", ringCard, "TOPLEFT", 12, ringCard._y)
+	colorRow:SetPoint("TOPRIGHT", ringCard, "TOPRIGHT", -12, ringCard._y)
+	local colorLabel = colorRow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	colorLabel:SetPoint("LEFT", 0, 0)
+	colorLabel:SetTextColor(0.92, 0.92, 0.92)
+	win.colorLabel = colorLabel
+	local swatch = CreateFrame("Button", nil, colorRow, "BackdropTemplate")
+	swatch:SetSize(28, 18)
+	swatch:SetPoint("LEFT", 118, 0)
+	swatch:SetBackdrop({
+		bgFile = "Interface\\Buttons\\WHITE8x8",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = true,
+		tileSize = 8,
+		edgeSize = 8,
+		insets = { left = 2, right = 2, top = 2, bottom = 2 },
+	})
+	swatch:SetBackdropBorderColor(0.55, 0.45, 0.18, 1)
+	win.colorSwatch = swatch
+	local function paintSwatch()
+		local r, g, b = 1, 0.82, 0.2
+		if ns.RingColor then
+			r, g, b = ns.RingColor()
+		end
+		swatch:SetBackdropColor(r, g, b, 1)
+	end
+	win.paintSwatch = paintSwatch
+	local function applyRingColor(r, g, b)
+		ns.db.classColor = false
+		ns.db.ringColor = { r, g, b }
+		if ns.ApplyRingSettings then
+			ns.ApplyRingSettings()
+		end
+		paintSwatch()
+	end
+	swatch:SetScript("OnClick", function()
+		local r, g, b = 1, 0.82, 0.2
+		if ns.RingColor then
+			r, g, b = ns.RingColor()
+		end
+		if ColorPickerFrame and ColorPickerFrame.SetupColorPickerAndShow then
+			ColorPickerFrame:SetupColorPickerAndShow({
+				r = r,
+				g = g,
+				b = b,
+				hasOpacity = false,
+				swatchFunc = function()
+					local cr, cg, cb = ColorPickerFrame:GetColorRGB()
+					applyRingColor(cr, cg, cb)
+				end,
+				cancelFunc = function()
+					applyRingColor(r, g, b)
+				end,
+			})
+		elseif ColorPickerFrame then
+			ColorPickerFrame.func = function()
+				local cr, cg, cb = ColorPickerFrame:GetColorRGB()
+				applyRingColor(cr, cg, cb)
+			end
+			ColorPickerFrame.cancelFunc = function()
+				applyRingColor(r, g, b)
+			end
+			if ColorPickerFrame.SetColorRGB then
+				ColorPickerFrame:SetColorRGB(r, g, b)
+			end
+			ColorPickerFrame:Show()
+		end
+	end)
+	local resetColor = makeGoldBtn(colorRow, 72, 20, ns.T("OPT_RESET_CLASS"))
+	resetColor:SetPoint("RIGHT", 0, 0)
+	resetColor:SetScript("OnClick", function()
+		ns.db.classColor = true
+		if ns.PlayerClassColor then
+			local r, g, b = ns.PlayerClassColor()
+			ns.db.ringColor = { r, g, b }
+		end
+		if ns.ApplyRingSettings then
+			ns.ApplyRingSettings()
+		end
+		paintSwatch()
+		ns.RelocalizeOptions()
+	end)
+	win.resetColor = resetColor
+	ringCard._y = ringCard._y - 28
 	addSlider(ringCard, "ringSize", 24, 128, "OPT_RING_SIZE")
 
 	local castCard = makeCard(ringPage, "OPT_CARD_CAST", 288, -4, 256, 200)
@@ -403,7 +492,7 @@ local function ensure()
 	end)
 	win.langBtn = langBtn
 
-	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -216, 528, 140)
+	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -252, 528, 140)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
 	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
 	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")
@@ -487,6 +576,15 @@ function ns.RelocalizeOptions()
 	end
 	if win.langBtn and win.langBtn.label and ns.LocaleLabel then
 		win.langBtn.label:SetText(ns.LocaleLabel())
+	end
+	if win.colorLabel then
+		win.colorLabel:SetText(ns.T("OPT_RING_COLOR"))
+	end
+	if win.resetColor and win.resetColor.label then
+		win.resetColor.label:SetText(ns.T("OPT_RESET_CLASS"))
+	end
+	if win.paintSwatch then
+		win.paintSwatch()
 	end
 	if win.aboutBody then
 		win.aboutBody:SetText(ns.T("INFO_ABOUT"))

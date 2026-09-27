@@ -2,7 +2,7 @@
 
 Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un second cercle autour affiche la distance de la cible. L'addon ne lance aucun sort.
 
-Version actuelle : **0.1.6**. Auteur : Vohnka — https://wow-forever.fr  
+Version actuelle : **0.1.7**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
 Pas de publication CurseForge tant que l'utilisateur n'a pas validé.
@@ -30,7 +30,7 @@ Ne pas uploader sur CurseForge tant que ce n'est pas demandé.
 | Besoin | Fichier |
 | --- | --- |
 | Distance cible | `Range.lua` |
-| Anneau curseur + anneau de portée | `Ring.lua` |
+| Anneau curseur + anneau de portée | `Ring.lua` (`ring.tga` à la racine, comme CursorRing) |
 | Fenêtre d'options (style Forever Rotation) | `Options.lua` |
 | Crédits, commandes, liens | Onglet Info de `Options.lua` (jamais dans une carte de réglages) |
 | Slash, SavedVariables | `Core.lua` |
