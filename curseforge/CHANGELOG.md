@@ -1,3 +1,7 @@
+# 0.1.9
+
+- Cursor follow is a direct port of CursorRing: UIParent, GetRect, scale divide, SetTexture(..., CLAMP). No WorldFrame, no pcall on the cursor math.
+
 # 0.1.8
 
 - Pin the ring to WorldFrame in raw cursor pixels so camelot secret-values cannot hide it. Visible fallback square if ring.tga fails. Errors print in chat.

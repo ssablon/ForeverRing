@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. Le frame est parenté à `WorldFrame` et collé avec `GetCursorPosition` brut (pixels), sans `GetRect` ni division d'échelle — les secret values camelot cassaient le suivi UIParent. Texture `ring.tga` (CursorRing en secours) + carré `WHITE8x8` visible si le TGA échoue. Couleur de classe ou couleur manuelle. Anneau extérieur + yards pour la cible.
+Client camelot `16001`. Le suivi curseur est une copie de CursorRing : frame sur `UIParent`, strata `TOOLTIP`, `SetIgnoreParentScale(false)`, `OnUpdate` = `GetCursorPosition() / GetEffectiveScale() - GetRect()`, `SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)`. Texture `ring.tga` avec `SetTexture(path, "CLAMP")`. Pas de `pcall` sur ce suivi. Anneau de portée = `thin_ring.tga` en BACKGROUND, plus grand. Couleur de classe ou manuelle.
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 

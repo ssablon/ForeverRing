@@ -1,3 +1,8 @@
+0.1.9
+
+2026-09-27
+- Cursor follow is a direct port of CursorRing: UIParent, GetRect, scale divide, SetTexture(..., CLAMP). No WorldFrame, no pcall on the cursor math.
+
 0.1.8
 
 2026-09-27
