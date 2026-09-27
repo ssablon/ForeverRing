@@ -93,7 +93,14 @@ local function start()
 			end
 		end)
 	end
-	ns.Print(ns.T("INIT"))
+	local ver = "1.0.8"
+	if C_AddOns and C_AddOns.GetAddOnMetadata then
+		local ok, value = pcall(C_AddOns.GetAddOnMetadata, addonName, "Version")
+		if ok and value then
+			ver = value
+		end
+	end
+	ns.Print(ns.T("INIT") .. " v" .. ver)
 end
 
 local frame = CreateFrame("Frame")

@@ -2,7 +2,7 @@
 
 Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Nom affiché : **Forever Mouse Ring-Range (Multi language)**. Dossier / SavedVariables restent `ForeverRing`. Un cercle suit la souris. Un anneau de portée plus petit est à l'intérieur. Les yards sont au-dessus. L'incantation remplit l'anneau. L'addon ne lance aucun sort. Textes joueur en anglais par défaut ; Auto = langue du client ; le joueur peut choisir une autre langue (dont le français).
 
-Version actuelle : **1.0.7**. Auteur : Vohnka — https://wow-forever.fr  
+Version actuelle : **1.0.8**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
 CurseForge projet **1714166** — **Forever Mouse Ring-Range (Multi language)**, slug `forever-mouse-ring-range`. Zip : `python curseforge/pack.py` puis `CF_TOKEN` + `CF_PROJECT_ID=1714166` + `python curseforge/upload.py`. Version jeu **1.60.1** (id `17053`). Pas de token dans git. Historique public : 1.0.0 puis 1.0.1… jamais de 0.1.x sur CurseForge. Ne jamais nommer d’autres addons dans le changelog public.

@@ -1,3 +1,8 @@
+1.0.8
+
+2026-09-27
+- Resource ring switch is on the Cursor card. The ring stays visible when the client hides power values.
+
 1.0.7
 
 2026-09-27

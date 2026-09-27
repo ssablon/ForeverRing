@@ -175,20 +175,42 @@ local function ringAlpha()
 	return v
 end
 
+local function readableNum(value)
+	if value == nil then
+		return nil
+	end
+	if issecretvalue and issecretvalue(value) then
+		return nil
+	end
+	if canaccessvalue and not canaccessvalue(value) then
+		return nil
+	end
+	return tonumber(value)
+end
+
+local function readPower(ptype)
+	local okC, cur, okM, maxp
+	if ptype then
+		okC, cur = pcall(UnitPower, "player", ptype)
+		okM, maxp = pcall(UnitPowerMax, "player", ptype)
+	else
+		okC, cur = pcall(UnitPower, "player")
+		okM, maxp = pcall(UnitPowerMax, "player")
+	end
+	return readableNum(okC and cur), readableNum(okM and maxp)
+end
+
 local function playerPower()
 	local okT, ptype, token = pcall(UnitPowerType, "player")
-	if not okT then
-		return 0, 0, nil
+	ptype = (okT and tonumber(ptype)) or 0
+	local cur, maxp = readPower(ptype)
+	if not cur or not maxp then
+		cur, maxp = readPower()
 	end
-	ptype = tonumber(ptype) or 0
-	local okC, cur = pcall(UnitPower, "player", ptype)
-	local okM, maxp = pcall(UnitPowerMax, "player", ptype)
-	cur = (okC and tonumber(cur)) or 0
-	maxp = (okM and tonumber(maxp)) or 0
-	if maxp <= 0 then
-		return 0, ptype, token
+	if not maxp or maxp <= 0 then
+		return 1, ptype, token
 	end
-	return cur / maxp, ptype, token
+	return math.max(0, math.min(1, (cur or 0) / maxp)), ptype, token
 end
 
 local function updatePowerRing()
@@ -206,8 +228,8 @@ local function updatePowerRing()
 	local pct, ptype, token = playerPower()
 	local r, g, b = powerColor(ptype, token)
 	local a = ringAlpha()
-	local maxS = evenPx(math.max(12, innerRangeSize() - 8))
-	local minS = evenPx(math.max(8, maxS * 0.30))
+	local maxS = evenPx(math.max(18, innerRangeSize() - 4))
+	local minS = evenPx(math.max(14, maxS * 0.45))
 	if minS > maxS then
 		minS = maxS
 	end

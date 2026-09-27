@@ -529,8 +529,9 @@ local function ensure()
 	infoPage:SetPoint("BOTTOMRIGHT", 0, 0)
 	win.infoPage = infoPage
 
-	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 312)
+	local ringCard = makeCard(ringPage, "OPT_CARD_CURSOR", 16, -4, 256, 338)
 	addSwitch(ringCard, "showRing", "OPT_ENABLE_RING")
+	addSwitch(ringCard, "showPower", "OPT_ENABLE_POWER")
 	addSwitch(ringCard, "showOutOfCombat", "OPT_OUT_OF_COMBAT")
 	addSwitch(ringCard, "hideOverUI", "OPT_HIDE_OVER_UI")
 	addSwitch(ringCard, "classColor", "OPT_CLASS_COLOR")
@@ -585,9 +586,8 @@ local function ensure()
 	end)
 	win.resetAll = resetAll
 
-	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -324, 528, 328)
+	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -350, 528, 300)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
-	addSwitch(rangeCard, "showPower", "OPT_ENABLE_POWER")
 	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
 	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")
 	addSwitch(rangeCard, "hideDead", "OPT_HIDE_DEAD")

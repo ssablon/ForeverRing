@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8
+
+- Resource ring switch is on the Cursor card. The ring stays visible when the client hides power values.
+
 ## 1.0.7
 
 - Cursor and range circles share the same center. A resource ring (mana, rage, energy) scales with your power and can be turned off.
