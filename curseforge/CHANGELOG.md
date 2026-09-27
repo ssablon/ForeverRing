@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Cursor ring has a hard edge. The dark outer halo on bright class colors (mage) is gone. Not mana or energy.
+
 ## 1.0.3
 
 - Range color: default distance bands or a custom color. Reset all settings button.

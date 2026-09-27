@@ -83,6 +83,16 @@ function ns.AddonOn()
 	return not ns.db or ns.db.enabled ~= false
 end
 
+local function setRingTex(tex, file)
+	if not tex or not file then
+		return
+	end
+	local ok = pcall(tex.SetTexture, tex, file, "CLAMP", "CLAMP", "NEAREST")
+	if not ok then
+		tex:SetTexture(file, "CLAMP")
+	end
+end
+
 local function ringSize()
 	return tonumber(ns.db and ns.db.ringSize) or 48
 end
@@ -376,7 +386,7 @@ function ns.CreateRing()
 	f:SetPoint("CENTER", UIParent, "CENTER")
 
 	rangeRing = f:CreateTexture(nil, "BACKGROUND")
-	rangeRing:SetTexture(THIN_FILE, "CLAMP")
+	setRingTex(rangeRing, THIN_FILE)
 	rangeRing:SetPoint("CENTER", f, "CENTER")
 	rangeRing:SetSize(innerRangeSize(), innerRangeSize())
 	rangeRing:SetVertexColor(0.05, 0.95, 0.55, ringAlpha())
@@ -384,7 +394,7 @@ function ns.CreateRing()
 
 	for i = 1, NUM_CAST_SEGMENTS do
 		local segment = f:CreateTexture(nil, "ARTWORK")
-		segment:SetTexture(CAST_FILE, "CLAMP")
+		setRingTex(segment, CAST_FILE)
 		segment:SetAllPoints()
 		segment:SetRotation(math.rad((i - 1) * (360 / NUM_CAST_SEGMENTS)))
 		segment:SetVertexColor(1, 1, 1, 0)
@@ -392,7 +402,7 @@ function ns.CreateRing()
 	end
 
 	ring = f:CreateTexture(nil, "BORDER")
-	ring:SetTexture(RING_FILE, "CLAMP")
+	setRingTex(ring, RING_FILE)
 	ring:SetAllPoints()
 	local r, g, b = ns.RingColor()
 	ring:SetVertexColor(r, g, b, ringAlpha())
