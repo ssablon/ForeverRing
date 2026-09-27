@@ -14,7 +14,7 @@ Do not put "WoW" in the project name. Wait for approval if asked. The numeric ID
 
 ```
 python curseforge/pack.py
-CF_TOKEN=... CF_PROJECT_ID=... python curseforge/upload.py
+CF_TOKEN=... CF_PROJECT_ID=1714166 python curseforge/upload.py
 ```
 
 Output zip: `F:\Github\addons\wow\ForeverRing-<version>.zip`  
@@ -25,5 +25,5 @@ Root folder inside the zip: `ForeverRing`
 After the first file is accepted, put the ID in both TOC files:
 
 ```
-## X-Curse-Project-ID: 123456
+## X-Curse-Project-ID: 1714166
 ```

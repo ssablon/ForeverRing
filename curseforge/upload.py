@@ -24,7 +24,7 @@ def main():
     ver = version()
     zip_path = Path(r"F:\Github\addons\wow") / f"ForeverRing-{ver}.zip"
     token = os.environ.get("CF_TOKEN")
-    project = os.environ.get("CF_PROJECT_ID")
+    project = os.environ.get("CF_PROJECT_ID") or "1714166"
     if not token or not project:
         print("Set CF_TOKEN and CF_PROJECT_ID", file=sys.stderr)
         sys.exit(2)
