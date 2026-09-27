@@ -308,7 +308,7 @@ local function ensure()
 		return win
 	end
 	win = CreateFrame("Frame", "ForeverRingOptions", UIParent, "BackdropTemplate")
-	win:SetSize(560, 500)
+	win:SetSize(560, 540)
 	win:SetPoint("CENTER")
 	win:SetBackdrop(PANEL)
 	win:SetBackdropColor(0.05, 0.05, 0.05, 0.96)
@@ -492,7 +492,7 @@ local function ensure()
 	end)
 	win.langBtn = langBtn
 
-	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -252, 528, 140)
+	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -252, 528, 176)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
 	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
 	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")

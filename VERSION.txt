@@ -1,3 +1,8 @@
+0.1.14
+
+2026-09-27
+- Options window is taller so the range card and its slider are fully visible.
+
 0.1.13
 
 2026-09-27
