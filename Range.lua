@@ -130,6 +130,13 @@ function ns.ClassMaxRange()
 end
 
 function ns.RangeColor(yards)
+	if ns.db and ns.db.rangeDefaultColor == false then
+		local c = ns.db.rangeColor
+		if type(c) == "table" then
+			return { c[1] or c.r or 0.05, c[2] or c.g or 0.95, c[3] or c.b or 0.55 }
+		end
+		return COLORS.melee
+	end
 	local maxR = ns.ClassMaxRange()
 	if not yards then
 		return COLORS.oor

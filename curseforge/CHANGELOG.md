@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- Range color: default distance bands or a custom color. Reset all settings button.
+
 ## 1.0.2
 
 - CurseForge project page. Public version history starts at 1.0.0.

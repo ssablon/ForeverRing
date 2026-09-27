@@ -1,3 +1,8 @@
+1.0.3
+
+2026-09-27
+- Range color: default distance bands or a custom color. Reset all settings button.
+
 1.0.2
 
 2026-09-27

@@ -483,6 +483,9 @@ function ns.UpdateRingCombat()
 		if color[1] ~= lastRangeR or color[2] ~= lastRangeG or color[3] ~= lastRangeB or lastRingA ~= a then
 			lastRangeR, lastRangeG, lastRangeB = color[1], color[2], color[3]
 			rangeRing:SetVertexColor(color[1], color[2], color[3], a)
+			if rangeLabel then
+				rangeLabel:SetTextColor(color[1], color[2], color[3])
+			end
 		end
 		if not lastHadRange then
 			rangeRing:Show()

@@ -17,6 +17,8 @@ local defaults = {
 	hideOverUI = true,
 	rangeSource = "auto",
 	ringColor = { 1, 0.82, 0.2 },
+	rangeDefaultColor = true,
+	rangeColor = { 0.05, 0.95, 0.55 },
 	showMinimap = true,
 	minimapAngle = 140,
 	locale = "auto",
@@ -30,6 +32,35 @@ local function applyDefaults(db)
 		end
 	end
 	return db
+end
+
+local function copyVal(value)
+	if type(value) ~= "table" then
+		return value
+	end
+	local out = {}
+	for key, item in pairs(value) do
+		out[key] = item
+	end
+	return out
+end
+
+function ns.ResetDefaults()
+	ForeverRingDB = {}
+	for key, value in pairs(defaults) do
+		ForeverRingDB[key] = copyVal(value)
+	end
+	ns.db = ForeverRingDB
+	if ns.ApplyRingSettings then
+		ns.ApplyRingSettings()
+	end
+	if ns.ApplyMinimap then
+		ns.ApplyMinimap()
+	end
+	if ns.RelocalizeOptions then
+		ns.RelocalizeOptions()
+	end
+	ns.Print(ns.T("RESET_DONE"))
 end
 
 function ns.Print(msg)
