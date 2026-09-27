@@ -1,8 +1,9 @@
 local addonName, ns = ...
 
--- Same files and SetTexture call as CursorRing (CLAMP + .tga).
-local RING_FILE = "Interface\\AddOns\\ForeverRing\\ring.tga"
-local THIN_FILE = "Interface\\AddOns\\ForeverRing\\thin_ring.tga"
+-- CursorRing uses these exact files and SetTexture(path, "CLAMP").
+-- We load CursorRing's files first: they already work on this client.
+local RING_FILE = "Interface\\AddOns\\CursorRing\\ring.tga"
+local THIN_FILE = "Interface\\AddOns\\CursorRing\\thin_ring.tga"
 
 local CLASS_COLORS = {
 	WARRIOR = { 0.78, 0.61, 0.43 },
@@ -18,6 +19,7 @@ local CLASS_COLORS = {
 
 local f, ring, rangeRing, rangeLabel
 local cachedUILeft, cachedUIBottom
+local createdOnce = false
 
 function ns.PlayerClassColor()
 	local class
@@ -55,39 +57,34 @@ local function rangeGap()
 	return tonumber(ns.db and ns.db.rangeGap) or 18
 end
 
-local function applyColor()
-	local r, g, b = ns.RingColor()
-	if ring then
-		ring:SetVertexColor(r, g, b, 1)
-		ring:SetAlpha(1)
-	end
-end
-
--- CursorRing CreateCursorRing + OnUpdate, unchanged math.
+-- CursorRing CreateCursorRing + OnUpdate, copied. Ring.lua starts itself
+-- (own events) so a later file error cannot prevent the ring from existing.
 function ns.CreateRing()
-	if ring then
-		if f then
-			f:Show()
-		end
-		ns.ApplyRingSettings()
+	if ring and f then
+		f:Show()
+		ring:Show()
 		return f
 	end
 
 	local size = ringSize()
-	f = CreateFrame("Frame", nil, UIParent)
+	f = CreateFrame("Frame", "ForeverRingCursor", UIParent)
 	f:SetSize(size, size)
 	f:SetFrameStrata("TOOLTIP")
-	f:SetIgnoreParentScale(false)
+	if f.SetIgnoreParentScale then
+		f:SetIgnoreParentScale(false)
+	end
 	f:EnableMouse(false)
 	f:SetClampedToScreen(false)
+	-- Visible even if the first OnUpdate errors (no points = invisible).
+	f:SetPoint("CENTER", UIParent, "CENTER")
 
 	ring = f:CreateTexture(nil, "BORDER")
 	ring:SetTexture(RING_FILE, "CLAMP")
 	ring:SetAllPoints()
 	local r, g, b = ns.RingColor()
 	ring:SetVertexColor(r, g, b, 1)
+	ring:Show()
 
-	-- Range circle = CursorRing outline: same texture API, larger, BACKGROUND.
 	rangeRing = f:CreateTexture(nil, "BACKGROUND")
 	rangeRing:SetTexture(THIN_FILE, "CLAMP")
 	rangeRing:SetPoint("CENTER", f, "CENTER")
@@ -100,6 +97,7 @@ function ns.CreateRing()
 	rangeLabel:SetTextColor(1, 0.92, 0.55)
 	rangeLabel:SetText("")
 
+	-- Exact CursorRing cursor math. Do not pcall this.
 	f:SetScript("OnUpdate", function(self)
 		if not cachedUILeft then
 			cachedUILeft, cachedUIBottom = UIParent:GetRect()
@@ -114,65 +112,52 @@ function ns.CreateRing()
 		self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
 	end)
 
-	ns.ApplyRingSettings()
+	f:Show()
+	if not createdOnce then
+		createdOnce = true
+		print("|cffd4a017Forever|r |cff66ccffRing|r: cursor ring on")
+	end
 	return f
 end
 
 function ns.ApplyRingSettings()
 	if not f or not ring then
-		return
+		ns.CreateRing()
+		if not f then
+			return
+		end
+	end
+	if ns.db then
+		ns.db.enabled = true
 	end
 	local size = ringSize()
 	f:SetSize(size, size)
-	ring:SetTexture(RING_FILE, "CLAMP")
+	f:Show()
 	ring:SetAllPoints()
-	applyColor()
+	local r, g, b = ns.RingColor()
+	ring:SetVertexColor(r, g, b, 1)
 	if ns.db and ns.db.showRing == false then
 		ring:Hide()
 	else
 		ring:Show()
 	end
 	if rangeRing then
-		rangeRing:SetTexture(THIN_FILE, "CLAMP")
 		rangeRing:SetSize(size + rangeGap(), size + rangeGap())
-	end
-	if ns.db and ns.db.enabled == false then
-		f:Hide()
-	else
-		f:Show()
 	end
 end
 
 function ns.UpdateRingCombat()
 	if not f then
-		return
-	end
-	if ns.db and ns.db.enabled == false then
-		f:Hide()
-		return
-	end
-	if ns.db and ns.db.onlyCombat then
-		local ok, inCombat = pcall(UnitAffectingCombat, "player")
-		if not ok or inCombat ~= true then
-			f:Hide()
-			return
-		end
-	end
-	if ns.db and ns.db.showOutOfCombat == false then
-		local ok, inCombat = pcall(UnitAffectingCombat, "player")
-		if not ok or inCombat ~= true then
-			f:Hide()
+		ns.CreateRing()
+		if not f then
 			return
 		end
 	end
 	f:Show()
-	applyColor()
-	if ring then
-		if ns.db and ns.db.showRing == false then
-			ring:Hide()
-		else
-			ring:Show()
-		end
+	if ring and (not ns.db or ns.db.showRing ~= false) then
+		local r, g, b = ns.RingColor()
+		ring:SetVertexColor(r, g, b, 1)
+		ring:Show()
 	end
 
 	local showRange = not ns.db or ns.db.showRange ~= false
@@ -205,10 +190,22 @@ function ns.UpdateRingCombat()
 end
 
 function ns.DebugRing()
-	ns.Print(string.format(
-		"frame=%s ring=%s enabled=%s",
-		f and "yes" or "no",
-		ring and "yes" or "no",
-		tostring(not ns.db or ns.db.enabled ~= false)
-	))
+	ns.Print(string.format("frame=%s ring=%s", f and "yes" or "no", ring and "yes" or "no"))
 end
+
+-- Same events as CursorRing: do not wait for Core.lua.
+local loader = CreateFrame("Frame")
+loader:RegisterEvent("ADDON_LOADED")
+loader:RegisterEvent("PLAYER_ENTERING_WORLD")
+loader:RegisterEvent("UI_SCALE_CHANGED")
+loader:RegisterEvent("DISPLAY_SIZE_CHANGED")
+loader:SetScript("OnEvent", function(_, event, name)
+	if event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
+		cachedUILeft, cachedUIBottom = nil, nil
+		return
+	end
+	if event == "ADDON_LOADED" and name ~= addonName then
+		return
+	end
+	ns.CreateRing()
+end)

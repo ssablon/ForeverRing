@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. Le suivi curseur est une copie de CursorRing : frame sur `UIParent`, strata `TOOLTIP`, `SetIgnoreParentScale(false)`, `OnUpdate` = `GetCursorPosition() / GetEffectiveScale() - GetRect()`, `SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)`. Texture `ring.tga` avec `SetTexture(path, "CLAMP")`. Pas de `pcall` sur ce suivi. Anneau de portée = `thin_ring.tga` en BACKGROUND, plus grand. Couleur de classe ou manuelle.
+Client camelot `16001`. `Ring.lua` démarre tout seul (événements comme CursorRing), sans dépendre de Core. Texture = `Interface\\AddOns\\CursorRing\\ring.tga` (fichier déjà validé). Le frame est d'abord ancré au centre de l'écran, puis l'`OnUpdate` CursorRing le colle à la souris. Si l'OnUpdate plante, l'anneau reste visible au centre. `enabled` est forcé à true au chargement.
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 

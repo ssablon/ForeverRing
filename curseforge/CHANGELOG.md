@@ -1,3 +1,7 @@
+# 0.1.10
+
+- Ring.lua starts itself like CursorRing (own events). Uses CursorRing ring.tga. Frame is anchored at screen center first so it stays visible if OnUpdate fails. enabled is forced on.
+
 # 0.1.9
 
 - Cursor follow is a direct port of CursorRing: UIParent, GetRect, scale divide, SetTexture(..., CLAMP). No WorldFrame, no pcall on the cursor math.

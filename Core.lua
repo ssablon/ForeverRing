@@ -35,6 +35,7 @@ end
 
 local function start()
 	ForeverRingDB = applyDefaults(ForeverRingDB)
+	ForeverRingDB.enabled = true
 	ns.db = ForeverRingDB
 	if ns.CreateRing then
 		local ok, err = pcall(ns.CreateRing)
