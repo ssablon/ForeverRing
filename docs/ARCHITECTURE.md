@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. Un frame `TOOLTIP` suit le curseur comme CursorRing : `GetCursorPosition` / `UIParent:GetEffectiveScale` moins `UIParent:GetRect`, sans filtrer les secret values. Texture `ring.tga` + `CLAMP` à la racine de l'addon (copie aussi dans `images\`). Couleur de classe par défaut (`RAID_CLASS_COLORS`), ou couleur manuelle dans les options. Un anneau extérieur (`thin_ring.tga`) change selon la distance de la cible.
+Client camelot `16001`. Le frame est parenté à `WorldFrame` et collé avec `GetCursorPosition` brut (pixels), sans `GetRect` ni division d'échelle — les secret values camelot cassaient le suivi UIParent. Texture `ring.tga` (CursorRing en secours) + carré `WHITE8x8` visible si le TGA échoue. Couleur de classe ou couleur manuelle. Anneau extérieur + yards pour la cible.
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 

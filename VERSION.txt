@@ -1,3 +1,8 @@
+0.1.8
+
+2026-09-27
+- Pin the ring to WorldFrame in raw cursor pixels so camelot secret-values cannot hide it. Visible fallback square if ring.tga fails. Errors print in chat.
+
 0.1.7
 
 2026-09-27

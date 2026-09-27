@@ -37,10 +37,16 @@ local function start()
 	ForeverRingDB = applyDefaults(ForeverRingDB)
 	ns.db = ForeverRingDB
 	if ns.CreateRing then
-		pcall(ns.CreateRing)
+		local ok, err = pcall(ns.CreateRing)
+		if not ok then
+			ns.Print(tostring(err))
+		end
 	end
 	if ns.ApplyRingSettings then
-		pcall(ns.ApplyRingSettings)
+		local ok, err = pcall(ns.ApplyRingSettings)
+		if not ok then
+			ns.Print(tostring(err))
+		end
 	end
 	if ns.CreateMinimap then
 		pcall(ns.CreateMinimap)
@@ -71,7 +77,10 @@ frame:SetScript("OnEvent", function(_, event, name)
 			pcall(ns.ClearRingRect)
 		end
 		if ns.CreateRing then
-			pcall(ns.CreateRing)
+			local ok, err = pcall(ns.CreateRing)
+			if not ok then
+				ns.Print(tostring(err))
+			end
 		end
 		if ns.CreateMinimap then
 			pcall(ns.CreateMinimap)
@@ -99,6 +108,10 @@ SlashCmdList["FOREVERRING"] = function(msg)
 	msg = string.lower(msg or "")
 	if msg == "options" or msg == "config" or msg == "menu" then
 		ns.ToggleOptions()
+	elseif msg == "debug" then
+		if ns.DebugRing then
+			ns.DebugRing()
+		end
 	elseif msg == "toggle" then
 		ns.db.enabled = not (ns.db.enabled ~= false)
 		ns.ApplyRingSettings()

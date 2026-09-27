@@ -1,3 +1,7 @@
+# 0.1.8
+
+- Pin the ring to WorldFrame in raw cursor pixels so camelot secret-values cannot hide it. Visible fallback square if ring.tga fails. Errors print in chat.
+
 # 0.1.7
 
 - Cursor ring follows the mouse the same way as CursorRing (raw cursor math, ring.tga + CLAMP). Class color by default, or pick a custom color in options.
