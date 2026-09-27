@@ -1,3 +1,7 @@
+# 0.1.13
+
+- Lighter CPU: 48 cast segments, cast ticker only while casting, skip unchanged cursor/range updates.
+
 # 0.1.12
 
 - Yard numbers sit above the cursor ring.

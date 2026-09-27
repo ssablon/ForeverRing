@@ -5,7 +5,7 @@ local RING_FILE = "Interface\\AddOns\\CursorRing\\ring.tga"
 local THIN_FILE = "Interface\\AddOns\\CursorRing\\thin_ring.tga"
 local CAST_FILE = "Interface\\AddOns\\CursorRing\\cast_segment.tga"
 
-local NUM_CAST_SEGMENTS = 180
+local NUM_CAST_SEGMENTS = 48
 
 local CLASS_COLORS = {
 	WARRIOR = { 0.78, 0.61, 0.43 },
@@ -21,7 +21,11 @@ local CLASS_COLORS = {
 
 local f, ring, rangeRing, rangeLabel
 local castSegments = {}
-local cachedUILeft, cachedUIBottom
+local cachedUILeft, cachedUIBottom, cachedScale
+local lastCursorX, lastCursorY
+local lastLit = -1
+local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
+local lastRingR, lastRingG, lastRingB
 local createdOnce = false
 local casting = false
 local castTicker
@@ -51,7 +55,8 @@ function ns.RingColor()
 end
 
 function ns.ClearRingRect()
-	cachedUILeft, cachedUIBottom = nil, nil
+	cachedUILeft, cachedUIBottom, cachedScale = nil, nil, nil
+	lastCursorX, lastCursorY = nil, nil
 end
 
 local function ringSize()
@@ -83,11 +88,44 @@ local function clamp01(v)
 end
 
 local function clearCast()
+	if lastLit <= 0 then
+		lastLit = 0
+		return
+	end
 	local cr, cg, cb = castColor()
-	for i = 1, NUM_CAST_SEGMENTS do
+	for i = 1, lastLit do
 		if castSegments[i] then
 			castSegments[i]:SetVertexColor(cr, cg, cb, 0)
 		end
+	end
+	lastLit = 0
+end
+
+local function setLit(numLit)
+	if numLit == lastLit then
+		return
+	end
+	local cr, cg, cb = castColor()
+	if numLit > lastLit then
+		for i = lastLit + 1, numLit do
+			if castSegments[i] then
+				castSegments[i]:SetVertexColor(cr, cg, cb, 1)
+			end
+		end
+	else
+		for i = numLit + 1, lastLit do
+			if castSegments[i] then
+				castSegments[i]:SetVertexColor(cr, cg, cb, 0)
+			end
+		end
+	end
+	lastLit = numLit
+end
+
+local function stopCastTicker()
+	if castTicker then
+		castTicker:Cancel()
+		castTicker = nil
 	end
 end
 
@@ -125,6 +163,7 @@ local function updateCastRing()
 	if not ns.db or ns.db.showCast == false then
 		clearCast()
 		casting = false
+		stopCastTicker()
 		return
 	end
 	local progress = castProgress()
@@ -133,30 +172,24 @@ local function updateCastRing()
 			clearCast()
 		end
 		casting = false
+		stopCastTicker()
 		return
 	end
 	casting = true
-	local cr, cg, cb = castColor()
-	local numLit = math.floor(progress * NUM_CAST_SEGMENTS + 0.5)
-	for i = 1, NUM_CAST_SEGMENTS do
-		if castSegments[i] then
-			castSegments[i]:SetVertexColor(cr, cg, cb, i <= numLit and 1 or 0)
-		end
-	end
+	setLit(math.floor(progress * NUM_CAST_SEGMENTS + 0.5))
 end
 
 local function startCastTicker()
-	if castTicker then
+	if castTicker or (ns.db and ns.db.showCast == false) then
 		return
 	end
-	castTicker = C_Timer.NewTicker(0.016, updateCastRing)
+	castTicker = C_Timer.NewTicker(0.05, updateCastRing)
 end
 
 function ns.CreateRing()
 	if ring and f then
 		f:Show()
 		ring:Show()
-		startCastTicker()
 		return f
 	end
 
@@ -205,19 +238,23 @@ function ns.CreateRing()
 	f:SetScript("OnUpdate", function(self)
 		if not cachedUILeft then
 			cachedUILeft, cachedUIBottom = UIParent:GetRect()
+			cachedScale = UIParent:GetEffectiveScale()
 		end
 
 		local x, y = GetCursorPosition()
-		local scale = UIParent:GetEffectiveScale()
+		local scale = cachedScale or UIParent:GetEffectiveScale()
 		x = x / scale - cachedUILeft
 		y = y / scale - cachedUIBottom
+		if x == lastCursorX and y == lastCursorY then
+			return
+		end
+		lastCursorX, lastCursorY = x, y
 
 		self:ClearAllPoints()
 		self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
 	end)
 
 	f:Show()
-	startCastTicker()
 	if not createdOnce then
 		createdOnce = true
 		print("|cffd4a017Forever|r |cff66ccffRing|r: cursor ring on")
@@ -240,7 +277,10 @@ function ns.ApplyRingSettings()
 	f:Show()
 	ring:SetAllPoints()
 	local r, g, b = ns.RingColor()
-	ring:SetVertexColor(r, g, b, 1)
+	if r ~= lastRingR or g ~= lastRingG or b ~= lastRingB then
+		lastRingR, lastRingG, lastRingB = r, g, b
+		ring:SetVertexColor(r, g, b, 1)
+	end
 	if ns.db and ns.db.showRing == false then
 		ring:Hide()
 	else
@@ -263,34 +303,42 @@ function ns.UpdateRingCombat()
 			return
 		end
 	end
-	f:Show()
-	if ring and (not ns.db or ns.db.showRing ~= false) then
-		local r, g, b = ns.RingColor()
-		ring:SetVertexColor(r, g, b, 1)
-		ring:Show()
-	end
-
 	local showRange = not ns.db or ns.db.showRange ~= false
 	local showText = not ns.db or ns.db.showRangeText ~= false
 	local yards, minR, maxR
-	if ns.RangeYards then
+	if showRange and ns.RangeYards then
 		yards, minR, maxR = ns.RangeYards()
 	end
 	if showRange and yards and rangeRing then
 		local color = ns.RangeColor and ns.RangeColor(yards) or { 0.05, 0.95, 0.55 }
-		rangeRing:SetVertexColor(color[1], color[2], color[3], 1)
-		rangeRing:Show()
+		if color[1] ~= lastRangeR or color[2] ~= lastRangeG or color[3] ~= lastRangeB then
+			lastRangeR, lastRangeG, lastRangeB = color[1], color[2], color[3]
+			rangeRing:SetVertexColor(color[1], color[2], color[3], 1)
+		end
+		if not lastHadRange then
+			rangeRing:Show()
+			lastHadRange = true
+		end
 		if showText and rangeLabel then
+			local text
 			if maxR then
-				rangeLabel:SetText(string.format("%d-%d", minR, maxR))
+				text = string.format("%d-%d", minR, maxR)
 			else
-				rangeLabel:SetText(string.format("%d+", minR or yards))
+				text = string.format("%d+", minR or yards)
 			end
-			rangeLabel:Show()
-		elseif rangeLabel then
+			if text ~= lastRangeText then
+				lastRangeText = text
+				rangeLabel:SetText(text)
+				rangeLabel:Show()
+			end
+		elseif rangeLabel and lastRangeText then
+			lastRangeText = nil
 			rangeLabel:SetText("")
 		end
-	else
+	elseif lastHadRange or lastRangeText then
+		lastHadRange = false
+		lastRangeText = nil
+		lastRangeR, lastRangeG, lastRangeB = nil, nil, nil
 		if rangeRing then
 			rangeRing:Hide()
 		end
@@ -332,8 +380,10 @@ loader:SetScript("OnEvent", function(_, event, name)
 	end
 	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
 		casting = true
+		startCastTicker()
 		return
 	end
 	casting = false
 	clearCast()
+	stopCastTicker()
 end)

@@ -53,7 +53,7 @@ local function start()
 		pcall(ns.CreateMinimap)
 	end
 	if not ns.ticker then
-		ns.ticker = C_Timer.NewTicker(0.2, function()
+		ns.ticker = C_Timer.NewTicker(0.25, function()
 			if ns.UpdateRingCombat then
 				ns.UpdateRingCombat()
 			end

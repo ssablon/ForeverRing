@@ -1,3 +1,8 @@
+0.1.13
+
+2026-09-27
+- Lighter CPU: 48 cast segments, cast ticker only while casting, skip unchanged cursor/range updates.
+
 0.1.12
 
 2026-09-27

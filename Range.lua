@@ -96,8 +96,14 @@ function ns.RangeColor(yards)
 	return COLORS.oor
 end
 
+local cachedLib, libTried
+
 -- Classic interact checks: duel ~10, trade ~11, inspect/follow ~28.
 local function libRange()
+	if libTried then
+		return cachedLib
+	end
+	libTried = true
 	if not LibStub then
 		return nil
 	end
@@ -105,6 +111,7 @@ local function libRange()
 	for i = 1, #names do
 		local ok, lib = pcall(LibStub, names[i], true)
 		if ok and lib and lib.GetRange then
+			cachedLib = lib
 			return lib
 		end
 	end
