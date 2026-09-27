@@ -1,4 +1,4 @@
-# Forever Ring
+# Forever Mouse Ring-Range
 
 Cursor ring for **WoW Forever** Classic. A second circle around the mouse shows range. It never casts.
 

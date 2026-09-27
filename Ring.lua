@@ -408,7 +408,7 @@ function ns.CreateRing()
 	applyShown(ns.RingShouldShow())
 	if not createdOnce then
 		createdOnce = true
-		print("|cffd4a017Forever|r |cff66ccffRing|r: cursor ring on")
+		print("|cffd4a017Forever|r |cff66ccffMouse Ring-Range|r: cursor ring on")
 	end
 	return f
 end

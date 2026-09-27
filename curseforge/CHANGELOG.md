@@ -1,3 +1,7 @@
+# 1.0.1
+
+- Addon display name: Forever Mouse Ring-Range (Multi language).
+
 # 1.0.0
 
 - First full release. Existing options and sliders all apply. Toggle can hide the rings.

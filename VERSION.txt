@@ -1,3 +1,8 @@
+1.0.1
+
+2026-09-27
+- Addon display name: Forever Mouse Ring-Range (Multi language).
+
 1.0.0
 
 2026-09-27

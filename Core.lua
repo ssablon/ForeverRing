@@ -33,7 +33,7 @@ local function applyDefaults(db)
 end
 
 function ns.Print(msg)
-	print("|cffd4a017Forever|r |cff66ccffRing|r: " .. (msg or ""))
+	print("|cffd4a017Forever|r |cff66ccffMouse Ring-Range|r: " .. (msg or ""))
 end
 
 local function start()
