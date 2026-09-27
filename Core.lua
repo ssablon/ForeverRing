@@ -93,7 +93,7 @@ local function start()
 			end
 		end)
 	end
-	local ver = "1.1.0"
+	local ver = "1.1.1"
 	if C_AddOns and C_AddOns.GetAddOnMetadata then
 		local ok, value = pcall(C_AddOns.GetAddOnMetadata, addonName, "Version")
 		if ok and value then

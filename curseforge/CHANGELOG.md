@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Class and range rings are half as thick. The resource ring shrinks and grows with mana, rage, or energy.
+
 ## 1.1.0
 
 - Rings redesigned: much thicker strokes so class, range, and resource stay readable. Resource ring still sits outside the class ring.

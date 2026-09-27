@@ -28,7 +28,8 @@ local lastCursorX, lastCursorY
 local lastLit = -1
 local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
 local lastRingR, lastRingG, lastRingB, lastRingA
-local lastPowerR, lastPowerG, lastPowerB, lastPowerA, lastPowerShow
+local lastPowerSize, lastPowerR, lastPowerG, lastPowerB, lastPowerA, lastPowerShow
+local lastPowerPct = 1
 local createdOnce = false
 local casting = false
 local interrupted = false
@@ -201,6 +202,50 @@ local function readPower(ptype)
 	return readableNum(okC and cur), readableNum(okM and maxp)
 end
 
+local function readStatusBar(bar)
+	if not bar or not bar.GetValue then
+		return nil, nil
+	end
+	local okV, cur = pcall(bar.GetValue, bar)
+	local minv, maxv
+	if bar.GetMinMaxValues then
+		local okM, a, b = pcall(bar.GetMinMaxValues, bar)
+		if okM then
+			minv, maxv = a, b
+		end
+	end
+	cur = readableNum(okV and cur)
+	minv = readableNum(minv) or 0
+	maxv = readableNum(maxv)
+	if cur and maxv and maxv > minv then
+		return cur - minv, maxv - minv
+	end
+	return nil, nil
+end
+
+local function framePower()
+	local pf = PlayerFrame
+	if not pf then
+		return nil, nil
+	end
+	local bars = { pf.manabar, pf.powerBar, pf.PowerBar, pf.ManaBar }
+	local content = pf.PlayerFrameContent and pf.PlayerFrameContent.PlayerFrameContentMain
+	if content then
+		local area = content.ManaBarArea
+		if area then
+			bars[#bars + 1] = area.ManaBar
+			bars[#bars + 1] = area.manaBar
+		end
+	end
+	for i = 1, #bars do
+		local cur, maxp = readStatusBar(bars[i])
+		if cur then
+			return cur, maxp
+		end
+	end
+	return nil, nil
+end
+
 local function playerPower()
 	local okT, ptype, token = pcall(UnitPowerType, "player")
 	ptype = (okT and tonumber(ptype)) or 0
@@ -208,11 +253,19 @@ local function playerPower()
 	if not cur or not maxp then
 		cur, maxp = readPower()
 	end
-	if not maxp or maxp <= 0 then
-		return 1, ptype, token
+	if not cur or not maxp then
+		cur, maxp = framePower()
 	end
-	return math.max(0, math.min(1, (cur or 0) / maxp)), ptype, token
+	if not maxp or maxp <= 0 then
+		return lastPowerPct, ptype, token
+	end
+	lastPowerPct = math.max(0, math.min(1, (cur or 0) / maxp))
+	return lastPowerPct, ptype, token
 end
+
+local CLASS_TEX_OUTER = 92
+local POWER_TEX_STROKE = 16
+local POWER_TEX_OUTER = CLASS_TEX_OUTER + POWER_TEX_STROKE
 
 local function updatePowerRing()
 	if not powerHolder or not powerRing then
@@ -228,10 +281,15 @@ local function updatePowerRing()
 	end
 	local pct, ptype, token = playerPower()
 	local r, g, b = powerColor(ptype, token)
-	local a = ringAlpha() * (0.55 + 0.45 * pct)
-	placeCenter(powerHolder, f, ringSize())
-	powerRing:ClearAllPoints()
-	powerRing:SetAllPoints(powerHolder)
+	local a = ringAlpha()
+	local size = ringSize()
+	local sz = evenPx(size * (CLASS_TEX_OUTER + POWER_TEX_STROKE * pct) / POWER_TEX_OUTER)
+	if sz ~= lastPowerSize then
+		lastPowerSize = sz
+		placeCenter(powerHolder, f, sz)
+		powerRing:ClearAllPoints()
+		powerRing:SetAllPoints(powerHolder)
+	end
 	if r ~= lastPowerR or g ~= lastPowerG or b ~= lastPowerB or a ~= lastPowerA then
 		lastPowerR, lastPowerG, lastPowerB, lastPowerA = r, g, b, a
 		powerRing:SetVertexColor(r, g, b, a)
@@ -591,6 +649,7 @@ function ns.ApplyRingSettings()
 	end
 	applyRangeCenter()
 	lastPowerShow = nil
+	lastPowerSize = nil
 	lastPowerA = nil
 	updatePowerRing()
 	if rangeLabel then

@@ -9,7 +9,7 @@ CX = CY = (SIZE - 1) / 2
 ROOT = Path(__file__).resolve().parents[1]
 WHITE = (255, 255, 255, 255)
 CLEAR = (255, 255, 255, 0)
-STROKE = 32
+STROKE = 16
 CLASS_OUTER = 92
 CLASS_INNER = CLASS_OUTER - STROKE
 POWER_INNER = CLASS_OUTER
@@ -43,4 +43,4 @@ def save(img, name):
 save(donut(CLASS_OUTER, CLASS_INNER), "ring.tga")
 save(donut(POWER_OUTER, POWER_INNER), "power.tga")
 # Range is drawn smaller, so the stroke is wider in the texture.
-save(donut(124, 72), "thin_ring.tga")
+save(donut(124, 98), "thin_ring.tga")
