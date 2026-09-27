@@ -1,3 +1,8 @@
+1.0.7
+
+2026-09-27
+- Cursor and range circles share the same center. A resource ring (mana, rage, energy) scales with your power and can be turned off.
+
 1.0.6
 
 2026-09-27

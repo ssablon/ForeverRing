@@ -1,6 +1,6 @@
 # Architecture — Forever Mouse Ring-Range
 
-Client camelot `16001`. `Ring.lua` démarre tout seul via un frame `drive` (l'anneau peut se cacher sans perdre le suivi). Textures : `ring.tga` (un trait, sans point), `thin_ring.tga` (portée), `cast_segment.tga`. Même centre (`SetTexCoord`). Yards **au-dessus**. Incantation = 48 segments, ticker seulement pendant le cast, rouge si interrompu. Portée : `rangeSource` auto (mouseover → focus → cible). `enabled`, combat, menus UI, opacité. Textes joueur : anglais par défaut, `ns.db.locale` = `auto` (GetLocale) ou un pack (frFR, deDE, …).
+Client camelot `16001`. `Ring.lua` démarre tout seul via un frame `drive` (l'anneau peut se cacher sans perdre le suivi). Textures : `ring.tga` (un trait, sans point), `thin_ring.tga` (portée + ressource). Cadres centrés, tailles paires. Anneau de ressource = `UnitPower` / couleur de barre. Yards **au-dessus**. Incantation = 48 segments, ticker seulement pendant le cast, rouge si interrompu. Portée : `rangeSource` auto (mouseover → focus → cible). `enabled`, combat, menus UI, opacité. Textes joueur : anglais par défaut, `ns.db.locale` = `auto` (GetLocale) ou un pack (frFR, deDE, …).
 
 Ticker 0,25 s pour la portée. `OnUpdate` sur le drive : curseur + masquage UI.
 

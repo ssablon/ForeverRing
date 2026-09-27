@@ -585,8 +585,9 @@ local function ensure()
 	end)
 	win.resetAll = resetAll
 
-	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -324, 528, 300)
+	local rangeCard = makeCard(ringPage, "OPT_CARD_RANGE", 16, -324, 528, 328)
 	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
+	addSwitch(rangeCard, "showPower", "OPT_ENABLE_POWER")
 	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
 	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")
 	addSwitch(rangeCard, "hideDead", "OPT_HIDE_DEAD")

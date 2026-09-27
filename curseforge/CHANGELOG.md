@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- Cursor and range circles share the same center. A resource ring (mana, rage, energy) scales with your power and can be turned off.
+
 ## 1.0.6
 
 - Cursor ring is one thin circle. The extra inner rim and the center dot are removed from the texture.

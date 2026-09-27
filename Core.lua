@@ -6,6 +6,7 @@ local defaults = {
 	showCast = true,
 	showRange = true,
 	showRangeText = true,
+	showPower = true,
 	showOutOfCombat = true,
 	onlyCombat = false,
 	onlyEnemy = false,

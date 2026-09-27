@@ -20,13 +20,14 @@ local CLASS_COLORS = {
 	DRUID = { 1.00, 0.49, 0.04 },
 }
 
-local drive, f, ring, rangeRing, rangeLabel
+local drive, f, ring, rangeHolder, rangeRing, powerHolder, powerRing, rangeLabel
 local castSegments = {}
 local cachedUILeft, cachedUIBottom, cachedScale
 local lastCursorX, lastCursorY
 local lastLit = -1
 local lastRangeText, lastRangeR, lastRangeG, lastRangeB, lastHadRange
 local lastRingR, lastRingG, lastRingB, lastRingA
+local lastPowerSize, lastPowerR, lastPowerG, lastPowerB, lastPowerShow
 local createdOnce = false
 local casting = false
 local interrupted = false
@@ -83,15 +84,43 @@ function ns.AddonOn()
 	return not ns.db or ns.db.enabled ~= false
 end
 
+local POWER_COLOR = {
+	[0] = { 0.20, 0.45, 1.00 },
+	[1] = { 0.90, 0.10, 0.10 },
+	[2] = { 1.00, 0.50, 0.25 },
+	[3] = { 1.00, 0.96, 0.20 },
+}
+
 local function setRingTex(tex, file)
 	if not tex or not file then
 		return
 	end
 	tex:SetTexture(file, "CLAMP")
+	pcall(tex.SetTexCoord, tex, 0, 1, 0, 1)
+end
+
+local function evenPx(n)
+	n = math.floor((tonumber(n) or 0) + 0.5)
+	if n < 8 then
+		n = 8
+	end
+	if n % 2 == 1 then
+		n = n + 1
+	end
+	return n
+end
+
+local function placeCenter(child, parent, size)
+	if not child or not parent then
+		return
+	end
+	child:ClearAllPoints()
+	child:SetSize(size, size)
+	child:SetPoint("CENTER", parent, "CENTER", 0, 0)
 end
 
 local function ringSize()
-	return tonumber(ns.db and ns.db.ringSize) or 48
+	return evenPx(tonumber(ns.db and ns.db.ringSize) or 48)
 end
 
 local function rangeGap()
@@ -101,29 +130,35 @@ end
 local function innerRangeSize()
 	local size = ringSize()
 	local gap = rangeGap()
-	local inner = math.max(16, size - gap)
-	if inner % 2 ~= size % 2 then
-		inner = inner + 1
-	end
-	return inner
+	return evenPx(math.max(16, size - gap))
 end
 
--- Same frame as the cursor ring. Zoom the texture out so the smaller
--- circle stays on the same center (no second size / pixel snap).
 local function applyRangeCenter()
-	if not rangeRing or not f then
+	if not rangeHolder or not f then
 		return
 	end
-	rangeRing:ClearAllPoints()
-	rangeRing:SetAllPoints(f)
-	local size = ringSize()
-	local inner = innerRangeSize()
-	if inner >= size then
+	placeCenter(rangeHolder, f, innerRangeSize())
+	if rangeRing then
+		rangeRing:ClearAllPoints()
+		rangeRing:SetAllPoints(rangeHolder)
 		pcall(rangeRing.SetTexCoord, rangeRing, 0, 1, 0, 1)
-		return
 	end
-	local pad = (size / inner - 1) * 0.5
-	pcall(rangeRing.SetTexCoord, rangeRing, -pad, 1 + pad, -pad, 1 + pad)
+end
+
+local function powerColor(ptype, token)
+	if PowerBarColor then
+		local pack = (token and PowerBarColor[token]) or PowerBarColor[ptype]
+		if type(pack) == "table" then
+			local r = pack.r or pack[1]
+			local g = pack.g or pack[2]
+			local b = pack.b or pack[3]
+			if r and g and b then
+				return r, g, b
+			end
+		end
+	end
+	local pack = POWER_COLOR[ptype] or POWER_COLOR[0]
+	return pack[1], pack[2], pack[3]
 end
 
 local function ringAlpha()
@@ -138,6 +173,60 @@ local function ringAlpha()
 		return 1
 	end
 	return v
+end
+
+local function playerPower()
+	local okT, ptype, token = pcall(UnitPowerType, "player")
+	if not okT then
+		return 0, 0, nil
+	end
+	ptype = tonumber(ptype) or 0
+	local okC, cur = pcall(UnitPower, "player", ptype)
+	local okM, maxp = pcall(UnitPowerMax, "player", ptype)
+	cur = (okC and tonumber(cur)) or 0
+	maxp = (okM and tonumber(maxp)) or 0
+	if maxp <= 0 then
+		return 0, ptype, token
+	end
+	return cur / maxp, ptype, token
+end
+
+local function updatePowerRing()
+	if not powerHolder or not powerRing then
+		return
+	end
+	local show = ns.RingShouldShow() and (not ns.db or ns.db.showPower ~= false)
+	if not show then
+		if lastPowerShow then
+			powerHolder:Hide()
+			lastPowerShow = false
+		end
+		return
+	end
+	local pct, ptype, token = playerPower()
+	local r, g, b = powerColor(ptype, token)
+	local a = ringAlpha()
+	local maxS = evenPx(math.max(12, innerRangeSize() - 8))
+	local minS = evenPx(math.max(8, maxS * 0.30))
+	if minS > maxS then
+		minS = maxS
+	end
+	local sz = evenPx(minS + (maxS - minS) * pct)
+	if sz ~= lastPowerSize then
+		lastPowerSize = sz
+		placeCenter(powerHolder, f, sz)
+		powerRing:ClearAllPoints()
+		powerRing:SetAllPoints(powerHolder)
+	end
+	if r ~= lastPowerR or g ~= lastPowerG or b ~= lastPowerB or lastRingA ~= a then
+		lastPowerR, lastPowerG, lastPowerB = r, g, b
+		powerRing:SetVertexColor(r, g, b, a)
+	end
+	if not lastPowerShow then
+		powerHolder:Show()
+		powerRing:Show()
+		lastPowerShow = true
+	end
 end
 
 local function mouseFrame()
@@ -375,6 +464,10 @@ local function tickDrive()
 	local show = ns.RingShouldShow()
 	if show then
 		followCursor()
+		updatePowerRing()
+	elseif lastPowerShow and powerHolder then
+		powerHolder:Hide()
+		lastPowerShow = false
 	end
 	applyShown(show)
 end
@@ -404,11 +497,20 @@ function ns.CreateRing()
 	f:SetClampedToScreen(false)
 	f:SetPoint("CENTER", UIParent, "CENTER")
 
-	rangeRing = f:CreateTexture(nil, "BACKGROUND")
+	rangeHolder = CreateFrame("Frame", nil, f)
+	rangeHolder:EnableMouse(false)
+	rangeRing = rangeHolder:CreateTexture(nil, "BACKGROUND")
 	setRingTex(rangeRing, THIN_FILE)
 	rangeRing:SetVertexColor(0.05, 0.95, 0.55, ringAlpha())
 	applyRangeCenter()
-	rangeRing:Hide()
+	rangeHolder:Hide()
+
+	powerHolder = CreateFrame("Frame", nil, f)
+	powerHolder:EnableMouse(false)
+	powerRing = powerHolder:CreateTexture(nil, "ARTWORK")
+	setRingTex(powerRing, THIN_FILE)
+	powerRing:SetVertexColor(0.20, 0.45, 1.00, ringAlpha())
+	powerHolder:Hide()
 
 	for i = 1, NUM_CAST_SEGMENTS do
 		local segment = f:CreateTexture(nil, "ARTWORK")
@@ -457,7 +559,11 @@ function ns.ApplyRingSettings()
 	end
 	local size = ringSize()
 	f:SetSize(size, size)
-	ring:SetAllPoints()
+	if ring then
+		ring:ClearAllPoints()
+		ring:SetAllPoints(f)
+		pcall(ring.SetTexCoord, ring, 0, 1, 0, 1)
+	end
 	local r, g, b = ns.RingColor()
 	local a = ringAlpha()
 	if r ~= lastRingR or g ~= lastRingG or b ~= lastRingB or a ~= lastRingA then
@@ -470,6 +576,9 @@ function ns.ApplyRingSettings()
 		ring:Show()
 	end
 	applyRangeCenter()
+	lastPowerSize = nil
+	lastPowerShow = nil
+	updatePowerRing()
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
 		rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
@@ -514,6 +623,7 @@ function ns.UpdateRingCombat()
 			end
 		end
 		if not lastHadRange then
+			rangeHolder:Show()
 			rangeRing:Show()
 			lastHadRange = true
 		end
@@ -538,6 +648,9 @@ function ns.UpdateRingCombat()
 		lastHadRange = false
 		lastRangeText = nil
 		lastRangeR, lastRangeG, lastRangeB = nil, nil, nil
+		if rangeHolder then
+			rangeHolder:Hide()
+		end
 		if rangeRing then
 			rangeRing:Hide()
 		end
@@ -545,6 +658,7 @@ function ns.UpdateRingCombat()
 			rangeLabel:SetText("")
 		end
 	end
+	updatePowerRing()
 end
 
 function ns.DebugRing()
@@ -568,9 +682,18 @@ loader:RegisterEvent("UNIT_SPELLCAST_FAILED")
 loader:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
 loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
 loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
+for _, ev in ipairs({ "UNIT_POWER_UPDATE", "UNIT_POWER_FREQUENT", "UNIT_POWER", "UNIT_DISPLAYPOWER", "UNIT_MAXPOWER" }) do
+	pcall(loader.RegisterEvent, loader, ev)
+end
 loader:SetScript("OnEvent", function(_, event, name)
 	if event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
 		cachedUILeft, cachedUIBottom = nil, nil
+		return
+	end
+	if event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" or event == "UNIT_POWER" or event == "UNIT_DISPLAYPOWER" or event == "UNIT_MAXPOWER" then
+		if name == "player" then
+			updatePowerRing()
+		end
 		return
 	end
 	if event == "ADDON_LOADED" and name ~= addonName then
