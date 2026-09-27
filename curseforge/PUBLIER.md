@@ -6,7 +6,7 @@ The API token cannot create a project. It only uploads a zip after the project e
 
 https://authors.curseforge.com/#/projects/create/general
 
-Values: `FIELDS.txt`. Logo: `logo-512.png`. Description: paste `DESCRIPTION.html`.
+Values: `FIELDS.txt`. Logo: `logo-512.png`. Description: paste `DESCRIPTION.md` (Markdown).
 
 Do not put "WoW" in the project name. Wait for approval if asked. The numeric ID is on the project page (About Project). Public slug: `forever-mouse-ring-range`.
 

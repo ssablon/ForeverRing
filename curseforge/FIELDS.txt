@@ -11,7 +11,7 @@ Main category:        Combat
 Additional:           Map & Minimap
 Allow comments:       Yes
 Experimental:         No
-Description:          curseforge/DESCRIPTION.html  (WYSIWYG → paste HTML)
+Description:          curseforge/DESCRIPTION.md  (Markdown)
 License:              Custom
 License text:         All Rights Reserved. © Vohnka — https://wow-forever.fr
 Website:              https://wow-forever.fr
