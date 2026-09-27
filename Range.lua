@@ -97,9 +97,30 @@ function ns.RangeColor(yards)
 end
 
 -- Classic interact checks: duel ~10, trade ~11, inspect/follow ~28.
+local function libRange()
+	if not LibStub then
+		return nil
+	end
+	local names = { "LibRangeCheck-3.0-WildFork", "LibRangeCheck-3.0" }
+	for i = 1, #names do
+		local ok, lib = pcall(LibStub, names[i], true)
+		if ok and lib and lib.GetRange then
+			return lib
+		end
+	end
+	return nil
+end
+
 function ns.GetTargetRange()
 	if not unitOk("target") then
 		return nil
+	end
+	local lib = libRange()
+	if lib then
+		local minR, maxR = safe(lib.GetRange, lib, "target", true)
+		if minR or maxR then
+			return minR, maxR
+		end
 	end
 	local near10 = interact("target", 3)
 	local near11 = interact("target", 2)

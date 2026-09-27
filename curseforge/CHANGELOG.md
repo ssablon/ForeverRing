@@ -1,3 +1,7 @@
+# 0.1.3
+
+- The cursor ring follows the mouse again, with the range circle around it. Camelot was hiding the old Blizzard texture and breaking cursor math.
+
 # 0.1.2
 
 - Minimap button opens the options. Drag to move. Right-click hides the rings.

@@ -3,7 +3,7 @@
 ## Title: |cffd4a017Forever|r |cff66ccffRing|r
 ## Notes: Cursor ring with target range drawn as a circle around the mouse.
 ## Notes-frFR: Anneau de curseur avec la distance de la cible en cercle autour de la souris.
-## Version: 0.1.2
+## Version: 0.1.3
 ## Author: Vohnka
 ## IconTexture: Interface\AddOns\ForeverRing\images\logo.tga
 ## Category: WoW Forever

@@ -35,8 +35,12 @@ end
 local function start()
 	ForeverRingDB = applyDefaults(ForeverRingDB)
 	ns.db = ForeverRingDB
-	ns.CreateRing()
-	ns.ApplyRingSettings()
+	if ns.CreateRing then
+		pcall(ns.CreateRing)
+	end
+	if ns.ApplyRingSettings then
+		pcall(ns.ApplyRingSettings)
+	end
 	if ns.CreateMinimap then
 		pcall(ns.CreateMinimap)
 	end
@@ -56,19 +60,34 @@ frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_TARGET_CHANGED")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+frame:RegisterEvent("UI_SCALE_CHANGED")
+frame:RegisterEvent("DISPLAY_SIZE_CHANGED")
 frame:SetScript("OnEvent", function(_, event, name)
 	if event == "ADDON_LOADED" and name == addonName then
 		start()
-	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED"
-		or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+	elseif event == "PLAYER_ENTERING_WORLD" then
+		if ns.ClearRingRect then
+			pcall(ns.ClearRingRect)
+		end
+		if ns.CreateRing then
+			pcall(ns.CreateRing)
+		end
 		if ns.CreateMinimap then
 			pcall(ns.CreateMinimap)
 		end
 		if ns.ApplyRingSettings then
-			ns.ApplyRingSettings()
+			pcall(ns.ApplyRingSettings)
 		end
 		if ns.UpdateRingCombat then
-			ns.UpdateRingCombat()
+			pcall(ns.UpdateRingCombat)
+		end
+	elseif event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
+		if ns.ClearRingRect then
+			pcall(ns.ClearRingRect)
+		end
+	elseif event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+		if ns.UpdateRingCombat then
+			pcall(ns.UpdateRingCombat)
 		end
 	end
 end)

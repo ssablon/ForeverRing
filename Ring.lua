@@ -1,5 +1,7 @@
 local addonName, ns = ...
 
+local IMG = "Interface\\AddOns\\ForeverRing\\images\\"
+
 local CLASS_COLORS = {
 	WARRIOR = { 0.78, 0.61, 0.43 },
 	PALADIN = { 0.96, 0.55, 0.73 },
@@ -12,20 +14,31 @@ local CLASS_COLORS = {
 	DRUID = { 1.00, 0.49, 0.04 },
 }
 
-local NUM = 64
-local COLORS_OOR = { 1, 0.16, 0.16 }
-local root, cursorTex, rangeTex, rangeFill, rangeLabel
-local castSegs, rangeSegs
+local root, cursorTex, rangeTex, rangeLabel
+local uiLeft, uiBottom
 
-local function safe(fn, ...)
+local function readable(value)
+	if value == nil then
+		return nil
+	end
+	if issecretvalue and issecretvalue(value) then
+		return nil
+	end
+	if canaccessvalue and not canaccessvalue(value) then
+		return nil
+	end
+	return value
+end
+
+local function call(fn, ...)
 	if not fn then
 		return nil
 	end
-	local ok, a, b = pcall(fn, ...)
+	local ok, a, b, c, d, e = pcall(fn, ...)
 	if not ok then
 		return nil
 	end
-	return a, b
+	return readable(a), readable(b), readable(c), readable(d), readable(e)
 end
 
 local function classRGB()
@@ -36,7 +49,7 @@ local function classRGB()
 		end
 		return 1, 0.82, 0.2
 	end
-	local _, class = safe(UnitClass, "player")
+	local _, class = call(UnitClass, "player")
 	local pack = CLASS_COLORS[class or ""]
 	if pack then
 		return pack[1], pack[2], pack[3]
@@ -44,88 +57,80 @@ local function classRGB()
 	return 0.83, 0.63, 0.09
 end
 
-local function makeSegs(parent, count, size)
-	local list = {}
-	for i = 1, count do
-		local tex = parent:CreateTexture(nil, "ARTWORK")
-		tex:SetTexture("Interface\\Buttons\\WHITE8x8")
-		tex:SetSize(3, math.max(6, size * 0.12))
-		tex:SetPoint("CENTER", parent, "CENTER", 0, 0)
-		tex:SetVertexColor(1, 1, 1, 0)
-		list[i] = tex
-	end
-	return list
-end
-
-local function placeSegs(list, size, lit, r, g, b, a)
-	local n = #list
-	local radius = size * 0.42
-	for i = 1, n do
-		local tex = list[i]
-		local angle = (i - 1) / n * math.pi * 2 - math.pi * 0.5
-		tex:ClearAllPoints()
-		tex:SetPoint("CENTER", root, "CENTER", math.cos(angle) * radius, math.sin(angle) * radius)
-		tex:SetRotation(angle + math.pi * 0.5)
-		if i <= lit then
-			tex:SetVertexColor(r, g, b, a)
-		else
-			tex:SetVertexColor(r, g, b, 0)
-		end
-	end
-end
-
 local function shouldShow()
 	if ns.db and ns.db.enabled == false then
 		return false
 	end
-	if ns.db and ns.db.onlyCombat and not safe(UnitAffectingCombat, "player") then
-		return false
+	if ns.db and ns.db.onlyCombat then
+		return call(UnitAffectingCombat, "player") == true
 	end
-	if ns.db and ns.db.showOutOfCombat == false and not safe(UnitAffectingCombat, "player") then
-		return false
+	if ns.db and ns.db.showOutOfCombat == false then
+		return call(UnitAffectingCombat, "player") == true
 	end
 	return true
 end
 
+local function refreshUIRect()
+	uiLeft, uiBottom = nil, nil
+	if UIParent and UIParent.GetRect then
+		local left, bottom = call(UIParent.GetRect, UIParent)
+		uiLeft, uiBottom = left, bottom
+	end
+end
+
+local function followCursor(frame)
+	local x, y = call(GetCursorPosition)
+	local scale = call(UIParent.GetEffectiveScale, UIParent)
+	if not x or not y or not scale or scale == 0 then
+		return
+	end
+	if uiLeft == nil then
+		refreshUIRect()
+	end
+	frame:ClearAllPoints()
+	frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale - (uiLeft or 0), y / scale - (uiBottom or 0))
+end
+
 function ns.CreateRing()
 	if root then
+		root:Show()
+		ns.ApplyRingSettings()
 		return root
 	end
 	root = CreateFrame("Frame", "ForeverRingFrame", UIParent)
 	root:SetSize(48, 48)
 	root:SetFrameStrata("TOOLTIP")
+	root:SetFrameLevel(100)
 	root:EnableMouse(false)
 	root:SetClampedToScreen(false)
+	if root.SetIgnoreParentScale then
+		root:SetIgnoreParentScale(false)
+	end
 
-	cursorTex = root:CreateTexture(nil, "BORDER")
-	cursorTex:SetTexture("Interface\\Minimap\\Ping\\MiniMap-Ping-Ring")
+	rangeTex = root:CreateTexture(nil, "BACKGROUND")
+	rangeTex:SetTexture(IMG .. "thin_ring")
+	rangeTex:SetPoint("CENTER")
+	rangeTex:SetSize(66, 66)
+	rangeTex:SetVertexColor(0.05, 0.95, 0.55, 1)
+
+	cursorTex = root:CreateTexture(nil, "ARTWORK")
+	cursorTex:SetTexture(IMG .. "ring")
 	cursorTex:SetAllPoints()
 	cursorTex:SetVertexColor(1, 0.82, 0.2, 1)
 
-	rangeTex = root:CreateTexture(nil, "BACKGROUND")
-	rangeTex:SetTexture("Interface\\Minimap\\Ping\\MiniMap-Ping-Ring")
-	rangeTex:SetPoint("CENTER")
-	rangeTex:SetSize(64, 64)
-	rangeTex:SetVertexColor(0.05, 0.95, 0.55, 0.9)
-
-	rangeSegs = makeSegs(root, NUM, 64)
-	castSegs = makeSegs(root, NUM, 48)
-
-	rangeLabel = root:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	rangeLabel:SetPoint("TOP", root, "BOTTOM", 0, -2)
+	rangeLabel = root:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	rangeLabel:SetPoint("TOP", root, "BOTTOM", 0, -1)
 	rangeLabel:SetTextColor(1, 0.92, 0.55)
 	rangeLabel:SetText("")
 
 	root:SetScript("OnUpdate", function(self)
-		local x, y = safe(GetCursorPosition)
-		local scale = safe(self.GetEffectiveScale, UIParent) or safe(UIParent.GetEffectiveScale, UIParent) or 1
-		if not x or not y or not scale or scale == 0 then
+		local ok = pcall(followCursor, self)
+		if not ok then
 			return
 		end
-		self:ClearAllPoints()
-		self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / scale, y / scale)
 	end)
 
+	refreshUIRect()
 	ns.ApplyRingSettings()
 	return root
 end
@@ -134,62 +139,56 @@ function ns.ApplyRingSettings()
 	if not root then
 		return
 	end
-	local size = (ns.db and ns.db.ringSize) or 48
-	local gap = (ns.db and ns.db.rangeGap) or 16
+	local size = tonumber(ns.db and ns.db.ringSize) or 48
+	local gap = tonumber(ns.db and ns.db.rangeGap) or 18
 	root:SetSize(size, size)
-	cursorTex:SetSize(size, size)
+	cursorTex:SetAllPoints()
 	rangeTex:SetSize(size + gap, size + gap)
 	local r, g, b = classRGB()
 	cursorTex:SetVertexColor(r, g, b, 1)
 	cursorTex:SetShown(not ns.db or ns.db.showRing ~= false)
-	rangeTex:SetShown(ns.db and ns.db.showRange ~= false)
-	rangeLabel:SetShown(ns.db and ns.db.showRangeText ~= false)
-	root:SetShown(shouldShow())
+	rangeTex:SetShown(false)
+	rangeLabel:SetText("")
+	if shouldShow() then
+		root:Show()
+	else
+		root:Hide()
+	end
 end
 
 function ns.UpdateRingCombat()
-	local fill, color = ns.RangeFill()
-	if rangeTex and color then
-		rangeTex:SetVertexColor(color[1], color[2], color[3], 0.95)
+	if not root then
+		return
 	end
-	if rangeSegs then
-		local size = ((ns.db and ns.db.ringSize) or 48) + ((ns.db and ns.db.rangeGap) or 16)
-		local lit = math.floor(fill * NUM + 0.5)
-		local c = color or COLORS_OOR
-		placeSegs(rangeSegs, size, ns.db and ns.db.showRange ~= false and lit or 0, c[1], c[2], c[3], 0.95)
+	if not shouldShow() then
+		root:Hide()
+		return
 	end
-	if rangeLabel then
-		if ns.db and ns.db.showRangeText ~= false then
-			rangeLabel:SetText(ns.RangeText())
+	root:Show()
+
+	local showRange = not ns.db or ns.db.showRange ~= false
+	local showText = not ns.db or ns.db.showRangeText ~= false
+	local yards, minR, maxR = ns.RangeYards()
+	if showRange and yards then
+		local color = ns.RangeColor(yards)
+		rangeTex:SetVertexColor(color[1], color[2], color[3], 1)
+		rangeTex:Show()
+		if showText then
+			if maxR then
+				rangeLabel:SetText(string.format("%d-%d", minR, maxR))
+			else
+				rangeLabel:SetText(string.format("%d+", minR or yards))
+			end
+			rangeLabel:Show()
 		else
 			rangeLabel:SetText("")
 		end
+	else
+		rangeTex:Hide()
+		rangeLabel:SetText("")
 	end
+end
 
-	local casting = false
-	local progress = 0
-	if ns.db and ns.db.showCast ~= false then
-		local name, _, _, startMS, endMS = safe(UnitCastingInfo, "player")
-		if not name then
-			name, _, _, startMS, endMS = safe(UnitChannelInfo, "player")
-		end
-		if name and startMS and endMS and endMS > startMS then
-			casting = true
-			progress = (GetTime() - startMS / 1000) / ((endMS - startMS) / 1000)
-			if progress < 0 then
-				progress = 0
-			end
-			if progress > 1 then
-				progress = 1
-			end
-		end
-	end
-	if castSegs then
-		local size = (ns.db and ns.db.ringSize) or 48
-		local lit = casting and math.floor(progress * NUM + 0.5) or 0
-		placeSegs(castSegs, size * 0.72, lit, 1, 1, 1, 0.85)
-	end
-	if root then
-		root:SetShown(shouldShow())
-	end
+function ns.ClearRingRect()
+	refreshUIRect()
 end
