@@ -14,6 +14,8 @@ local defaults = {
 	ringSize = 48,
 	rangeGap = 18,
 	ringColor = { 1, 0.82, 0.2 },
+	showMinimap = true,
+	minimapAngle = 140,
 }
 
 local function applyDefaults(db)
@@ -35,6 +37,9 @@ local function start()
 	ns.db = ForeverRingDB
 	ns.CreateRing()
 	ns.ApplyRingSettings()
+	if ns.CreateMinimap then
+		pcall(ns.CreateMinimap)
+	end
 	if not ns.ticker then
 		ns.ticker = C_Timer.NewTicker(0.2, function()
 			if ns.UpdateRingCombat then
@@ -56,6 +61,9 @@ frame:SetScript("OnEvent", function(_, event, name)
 		start()
 	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED"
 		or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+		if ns.CreateMinimap then
+			pcall(ns.CreateMinimap)
+		end
 		if ns.ApplyRingSettings then
 			ns.ApplyRingSettings()
 		end

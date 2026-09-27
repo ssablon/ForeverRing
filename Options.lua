@@ -95,7 +95,12 @@ local function addSwitch(card, key, label)
 	sw:SetScript("OnClick", function()
 		ns.db[key] = not featureOn(key)
 		paintSwitch(sw, featureOn(key))
-		ns.ApplyRingSettings()
+		if ns.ApplyRingSettings then
+			ns.ApplyRingSettings()
+		end
+		if ns.ApplyMinimap then
+			ns.ApplyMinimap()
+		end
 	end)
 	paintSwitch(sw, featureOn(key))
 	card._y = card._y - 26
@@ -214,6 +219,7 @@ local function ensure()
 	local castCard = makeCard(win, "OPT_CARD_CAST", 288, -48, 256, 200)
 	addSwitch(castCard, "showCast", ns.T("OPT_ENABLE_CAST"))
 	addSwitch(castCard, "onlyCombat", ns.T("OPT_ONLY_COMBAT"))
+	addSwitch(castCard, "showMinimap", ns.T("OPT_MINIMAP"))
 
 	local rangeCard = makeCard(win, "OPT_CARD_RANGE", 16, -260, 256, 140)
 	addSwitch(rangeCard, "showRange", ns.T("OPT_ENABLE_RANGE"))
@@ -240,3 +246,101 @@ function ns.ToggleOptions()
 		frame:Show()
 	end
 end
+
+local function safe(fn, ...)
+	if not fn then
+		return nil
+	end
+	local ok, a, b = pcall(fn, ...)
+	if not ok then
+		return nil
+	end
+	return a, b
+end
+
+local function placeMinimap(btn)
+	if not Minimap or not btn then
+		return
+	end
+	local angle = ((ns.db and ns.db.minimapAngle) or 140) * math.pi / 180
+	btn:ClearAllPoints()
+	btn:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * 80, math.sin(angle) * 80)
+end
+
+function ns.ApplyMinimap()
+	if not ns.minimap then
+		return
+	end
+	if ns.db and ns.db.showMinimap == false then
+		ns.minimap:Hide()
+	else
+		ns.minimap:Show()
+		placeMinimap(ns.minimap)
+	end
+end
+
+function ns.CreateMinimap()
+	if ns.minimap then
+		ns.ApplyMinimap()
+		return
+	end
+	if not Minimap then
+		return
+	end
+	local btn = CreateFrame("Button", "ForeverRingMinimap", Minimap)
+	btn:SetSize(32, 32)
+	btn:SetFrameStrata("MEDIUM")
+	btn:SetFrameLevel(8)
+	btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	btn:RegisterForDrag("LeftButton")
+	btn:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+	local icon = btn:CreateTexture(nil, "ARTWORK")
+	icon:SetTexture("Interface\\AddOns\\ForeverRing\\images\\logo")
+	icon:SetPoint("TOPLEFT", 6, -6)
+	icon:SetPoint("BOTTOMRIGHT", -6, 6)
+	local border = btn:CreateTexture(nil, "OVERLAY")
+	border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+	border:SetSize(54, 54)
+	border:SetPoint("TOPLEFT")
+	btn:SetScript("OnClick", function(_, button)
+		if button == "RightButton" then
+			if not ns.db then
+				return
+			end
+			ns.db.enabled = not (ns.db.enabled ~= false)
+			if ns.ApplyRingSettings then
+				ns.ApplyRingSettings()
+			end
+			return
+		end
+		ns.ToggleOptions()
+	end)
+	btn:SetScript("OnDragStart", function(self)
+		self:SetScript("OnUpdate", function(me)
+			local mx, my = safe(Minimap.GetCenter, Minimap)
+			local cx, cy = safe(GetCursorPosition)
+			local scale = safe(Minimap.GetEffectiveScale, Minimap) or 1
+			if not mx or not my or not cx or not cy or scale == 0 then
+				return
+			end
+			ns.db.minimapAngle = math.deg(math.atan2(cy / scale - my, cx / scale - mx))
+			placeMinimap(me)
+		end)
+	end)
+	btn:SetScript("OnDragStop", function(self)
+		self:SetScript("OnUpdate", nil)
+	end)
+	btn:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		GameTooltip:AddLine(ns.T("TITLE"), 1, 0.82, 0)
+		GameTooltip:AddLine(ns.T("MINIMAP_L"), 1, 1, 1)
+		GameTooltip:AddLine(ns.T("MINIMAP_R"), 0.7, 0.7, 0.7)
+		GameTooltip:Show()
+	end)
+	btn:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+	ns.minimap = btn
+	ns.ApplyMinimap()
+end
+

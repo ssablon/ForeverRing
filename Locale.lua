@@ -34,6 +34,9 @@ L.enUS = {
 	HELP = "/fring options | toggle",
 	LOCKED = "On.",
 	UNLOCKED = "Off.",
+	MINIMAP_L = "Left-click: options",
+	MINIMAP_R = "Right-click: show or hide the rings. Drag to move.",
+	OPT_MINIMAP = "Show minimap button",
 }
 
 L.frFR = {
@@ -68,6 +71,9 @@ L.frFR = {
 	HELP = "/fring options | toggle",
 	LOCKED = "Activé.",
 	UNLOCKED = "Désactivé.",
+	MINIMAP_L = "Clic gauche : options",
+	MINIMAP_R = "Clic droit : afficher ou cacher les anneaux. Glisser pour déplacer.",
+	OPT_MINIMAP = "Bouton de la minimap",
 }
 
 local packs = { enUS = L.enUS, frFR = L.frFR }

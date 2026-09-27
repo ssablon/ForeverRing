@@ -1,3 +1,8 @@
+0.1.2
+
+2026-09-27
+- Minimap button opens the options. Drag to move. Right-click hides the rings.
+
 0.1.1
 
 2026-09-27
