@@ -5,7 +5,7 @@ Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Nom 
 Version actuelle : **1.0.1**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
-Pas de publication CurseForge tant que l'utilisateur n'a pas validé.
+CurseForge : nouveau projet **Forever Mouse Ring-Range (Multi language)**, slug `forever-mouse-ring-range`. Zip : `python curseforge/pack.py` puis `CF_TOKEN` + `CF_PROJECT_ID` + `python curseforge/upload.py`. Version jeu **1.60.1** (id `17053`). Pas de token dans git. L’ID numérique s’ajoute dans les deux TOC (`## X-Curse-Project-ID`) dès qu’il existe.
 
 ## Source de vérité
 

@@ -1,0 +1,25 @@
+Paste into the CurseForge Create Project form. Do not put "WoW" in the project name (CurseForge rejects it).
+
+Game:                 World of Warcraft
+Project name:         Forever Mouse Ring-Range (Multi language)
+Slug (if asked):      forever-mouse-ring-range
+Logo:                 curseforge/logo-512.png
+Summary (EN):         Forever Mouse Ring-Range (Multi language) — cursor ring with range and cast progress for Forever Classic. Never casts. 11 languages.
+Summary (FR):         Forever Mouse Ring-Range (Multi language) — anneau de curseur avec portée et incantation pour Forever Classic. Ne lance aucun sort. 11 langues.
+Class:                Addon
+Main category:        Combat
+Additional:           Map & Minimap
+Allow comments:       Yes
+Experimental:         No
+Description:          curseforge/DESCRIPTION.html  (WYSIWYG → paste HTML)
+License:              Custom
+License text:         All Rights Reserved. © Vohnka — https://wow-forever.fr
+Website:              https://wow-forever.fr
+Source:               private GitHub repo
+Issues / Support:     https://discord.gg/qmb2uDu8Z3  (English only: #support, #bugs, #suggestions)
+
+File to upload:       F:\Github\addons\wow\ForeverRing-<VERSION.txt>.zip
+Display name:         Forever Mouse Ring-Range <VERSION.txt>
+Release type:         Release
+Changelog:            curseforge/CHANGELOG.md
+Supported versions:   1.60.1  (API id 17053)
