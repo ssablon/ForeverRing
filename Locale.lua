@@ -4,20 +4,15 @@ local L = {}
 
 L.enUS = {
 	TITLE = "Forever Ring",
-	TITLE_SUB = "(Cursor + range)",
+	TITLE_SUB = "(Multi language)",
 	INIT = "Loaded. /fring options",
 	OPTIONS_TITLE = "Forever Ring — Options",
 	SWITCH_ON = "ON",
 	SWITCH_OFF = "OFF",
-	TAB_RING = "Ring",
-	TAB_RANGE = "Range",
-	TAB_INFO = "Info",
-	OPT_NAV_TITLE = "Forever Ring Options",
 	OPT_CARD_CURSOR = "Cursor ring",
 	OPT_CARD_CAST = "Cast",
 	OPT_CARD_RANGE = "Target range",
 	OPT_CARD_ABOUT = "About",
-	OPT_CARD_COMMANDS = "Commands",
 	OPT_ENABLE_RING = "Show cursor ring",
 	OPT_ENABLE_CAST = "Show cast on the ring",
 	OPT_ENABLE_RANGE = "Show range around the ring",
@@ -28,7 +23,7 @@ L.enUS = {
 	OPT_RING_SIZE = "Ring size: %d",
 	OPT_RANGE_GAP = "Range ring gap: %d",
 	OPT_CLASS_COLOR = "Use class color",
-	INFO_ABOUT = "Forever Ring draws a ring on the mouse and a second circle around it for target distance. It never casts.",
+	INFO_ABOUT = "Forever Ring draws a ring on the mouse and a second circle around it for target distance. It never casts. Interface follows the game client language (11 languages, English fallback).",
 	INFO_CREDIT = "Created by Vohnka",
 	INFO_CMD_LIST = "/fring — help\n/fring options — this window\n/fring toggle — show or hide",
 	HELP = "/fring options | toggle",
@@ -40,21 +35,13 @@ L.enUS = {
 }
 
 L.frFR = {
-	TITLE = "Forever Ring",
-	TITLE_SUB = "(Curseur + portée)",
+	TITLE_SUB = "(Multi language)",
 	INIT = "Chargé. /fring options",
 	OPTIONS_TITLE = "Forever Ring — Options",
-	SWITCH_ON = "ON",
-	SWITCH_OFF = "OFF",
-	TAB_RING = "Anneau",
-	TAB_RANGE = "Portée",
-	TAB_INFO = "Info",
-	OPT_NAV_TITLE = "Options Forever Ring",
 	OPT_CARD_CURSOR = "Anneau du curseur",
 	OPT_CARD_CAST = "Incantation",
 	OPT_CARD_RANGE = "Portée de la cible",
 	OPT_CARD_ABOUT = "À propos",
-	OPT_CARD_COMMANDS = "Commandes",
 	OPT_ENABLE_RING = "Afficher l'anneau du curseur",
 	OPT_ENABLE_CAST = "Afficher l'incantation sur l'anneau",
 	OPT_ENABLE_RANGE = "Afficher la portée autour de l'anneau",
@@ -65,7 +52,7 @@ L.frFR = {
 	OPT_RING_SIZE = "Taille de l'anneau : %d",
 	OPT_RANGE_GAP = "Écart de l'anneau de portée : %d",
 	OPT_CLASS_COLOR = "Couleur de classe",
-	INFO_ABOUT = "Forever Ring dessine un anneau sur la souris et un second cercle autour pour la distance de la cible. Il ne lance aucun sort.",
+	INFO_ABOUT = "Forever Ring dessine un anneau sur la souris et un second cercle autour pour la distance de la cible. Il ne lance aucun sort. L'interface suit la langue du client (11 langues, repli anglais).",
 	INFO_CREDIT = "Créé par Vohnka",
 	INFO_CMD_LIST = "/fring — aide\n/fring options — cette fenêtre\n/fring toggle — afficher ou cacher",
 	HELP = "/fring options | toggle",
@@ -76,35 +63,270 @@ L.frFR = {
 	OPT_MINIMAP = "Bouton de la minimap",
 }
 
-local packs = { enUS = L.enUS, frFR = L.frFR }
-L.deDE, L.esES, L.esMX, L.ruRU, L.zhCN, L.zhTW, L.ptBR, L.itIT, L.koKR = L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS
-packs.deDE, packs.esES, packs.esMX, packs.ruRU, packs.zhCN, packs.zhTW, packs.ptBR, packs.itIT, packs.koKR =
-	L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS, L.enUS
+L.deDE = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "Geladen. /fring options",
+	OPTIONS_TITLE = "Forever Ring — Optionen",
+	OPT_CARD_CURSOR = "Cursor-Ring",
+	OPT_CARD_CAST = "Zauber",
+	OPT_CARD_RANGE = "Zielreichweite",
+	OPT_CARD_ABOUT = "Info",
+	OPT_ENABLE_RING = "Cursor-Ring anzeigen",
+	OPT_ENABLE_CAST = "Zauberfortschritt auf dem Ring",
+	OPT_ENABLE_RANGE = "Reichweite um den Ring anzeigen",
+	OPT_RANGE_TEXT = "Yard-Zahlen anzeigen",
+	OPT_ONLY_COMBAT = "Nur im Kampf",
+	OPT_ONLY_ENEMY = "Nur feindliche Ziele",
+	OPT_OUT_OF_COMBAT = "Außerhalb des Kampfes anzeigen",
+	OPT_RING_SIZE = "Ringgröße: %d",
+	OPT_RANGE_GAP = "Abstand des Reichweitenrings: %d",
+	OPT_CLASS_COLOR = "Klassenfarbe verwenden",
+	INFO_ABOUT = "Forever Ring zeichnet einen Ring an den Mauszeiger und einen zweiten Kreis für die Zieldistanz. Es zaubert nie. Die Oberfläche folgt der Client-Sprache (11 Sprachen, Englisch als Fallback).",
+	INFO_CREDIT = "Erstellt von Vohnka",
+	INFO_CMD_LIST = "/fring — Hilfe\n/fring options — dieses Fenster\n/fring toggle — ein- oder ausblenden",
+	HELP = "/fring options | toggle",
+	LOCKED = "An.",
+	UNLOCKED = "Aus.",
+	MINIMAP_L = "Linksklick: Optionen",
+	MINIMAP_R = "Rechtsklick: Ringe ein- oder ausblenden. Ziehen zum Verschieben.",
+	OPT_MINIMAP = "Minikarten-Button anzeigen",
+}
 
-local function localeCode()
-	local loc
-	if ns.db and ns.db.locale and ns.db.locale ~= "" then
-		loc = ns.db.locale
-	else
-		local ok, value = pcall(GetLocale)
-		loc = ok and value or "enUS"
-	end
+L.esES = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "Cargado. /fring options",
+	OPTIONS_TITLE = "Forever Ring — Opciones",
+	OPT_CARD_CURSOR = "Anillo del cursor",
+	OPT_CARD_CAST = "Lanzamiento",
+	OPT_CARD_RANGE = "Alcance del objetivo",
+	OPT_CARD_ABOUT = "Acerca de",
+	OPT_ENABLE_RING = "Mostrar el anillo del cursor",
+	OPT_ENABLE_CAST = "Mostrar el lanzamiento en el anillo",
+	OPT_ENABLE_RANGE = "Mostrar el alcance alrededor del anillo",
+	OPT_RANGE_TEXT = "Mostrar las yardas",
+	OPT_ONLY_COMBAT = "Solo en combate",
+	OPT_ONLY_ENEMY = "Solo objetivos hostiles",
+	OPT_OUT_OF_COMBAT = "Mostrar fuera de combate",
+	OPT_RING_SIZE = "Tamaño del anillo: %d",
+	OPT_RANGE_GAP = "Separación del anillo de alcance: %d",
+	OPT_CLASS_COLOR = "Usar color de clase",
+	INFO_ABOUT = "Forever Ring dibuja un anillo en el ratón y un segundo círculo con la distancia al objetivo. Nunca lanza hechizos. La interfaz sigue el idioma del cliente (11 idiomas, inglés como respaldo).",
+	INFO_CREDIT = "Creado por Vohnka",
+	INFO_CMD_LIST = "/fring — ayuda\n/fring options — esta ventana\n/fring toggle — mostrar u ocultar",
+	HELP = "/fring options | toggle",
+	LOCKED = "Activado.",
+	UNLOCKED = "Desactivado.",
+	MINIMAP_L = "Clic izquierdo: opciones",
+	MINIMAP_R = "Clic derecho: mostrar u ocultar los anillos. Arrastra para mover.",
+	OPT_MINIMAP = "Mostrar botón del minimapa",
+}
+
+L.ruRU = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "Загружено. /fring options",
+	OPTIONS_TITLE = "Forever Ring — Настройки",
+	OPT_CARD_CURSOR = "Кольцо курсора",
+	OPT_CARD_CAST = "Применение",
+	OPT_CARD_RANGE = "Дальность цели",
+	OPT_CARD_ABOUT = "О аддоне",
+	OPT_ENABLE_RING = "Показывать кольцо курсора",
+	OPT_ENABLE_CAST = "Показывать применение на кольце",
+	OPT_ENABLE_RANGE = "Показывать дальность вокруг кольца",
+	OPT_RANGE_TEXT = "Показывать ярды",
+	OPT_ONLY_COMBAT = "Только в бою",
+	OPT_ONLY_ENEMY = "Только враждебные цели",
+	OPT_OUT_OF_COMBAT = "Показывать вне боя",
+	OPT_RING_SIZE = "Размер кольца: %d",
+	OPT_RANGE_GAP = "Отступ кольца дальности: %d",
+	OPT_CLASS_COLOR = "Цвет класса",
+	INFO_ABOUT = "Forever Ring рисует кольцо на курсоре и второй круг для дистанции до цели. Он не применяет заклинания. Интерфейс следует языку клиента (11 языков, запасной английский).",
+	INFO_CREDIT = "Создано Vohnka",
+	INFO_CMD_LIST = "/fring — справка\n/fring options — это окно\n/fring toggle — показать или скрыть",
+	HELP = "/fring options | toggle",
+	LOCKED = "Вкл.",
+	UNLOCKED = "Выкл.",
+	MINIMAP_L = "ЛКМ: настройки",
+	MINIMAP_R = "ПКМ: показать или скрыть кольца. Перетащите, чтобы сдвинуть.",
+	OPT_MINIMAP = "Кнопка у миникарты",
+}
+
+L.zhCN = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "已加载。/fring options",
+	OPTIONS_TITLE = "Forever Ring — 选项",
+	OPT_CARD_CURSOR = "鼠标圆环",
+	OPT_CARD_CAST = "施法",
+	OPT_CARD_RANGE = "目标距离",
+	OPT_CARD_ABOUT = "关于",
+	OPT_ENABLE_RING = "显示鼠标圆环",
+	OPT_ENABLE_CAST = "在圆环上显示施法",
+	OPT_ENABLE_RANGE = "在圆环外显示距离",
+	OPT_RANGE_TEXT = "显示码数",
+	OPT_ONLY_COMBAT = "仅在战斗中",
+	OPT_ONLY_ENEMY = "仅敌对目标",
+	OPT_OUT_OF_COMBAT = "非战斗时显示",
+	OPT_RING_SIZE = "圆环大小：%d",
+	OPT_RANGE_GAP = "距离环间距：%d",
+	OPT_CLASS_COLOR = "使用职业颜色",
+	INFO_ABOUT = "Forever Ring 在鼠标上画一个圆环，并用外圈显示目标距离。它不会施法。界面跟随游戏客户端语言（11 种语言，缺省英语）。",
+	INFO_CREDIT = "由 Vohnka 制作",
+	INFO_CMD_LIST = "/fring — 帮助\n/fring options — 本窗口\n/fring toggle — 显示或隐藏",
+	HELP = "/fring options | toggle",
+	LOCKED = "已开启。",
+	UNLOCKED = "已关闭。",
+	MINIMAP_L = "左键：选项",
+	MINIMAP_R = "右键：显示或隐藏圆环。拖动可移动。",
+	OPT_MINIMAP = "显示小地图按钮",
+}
+
+L.zhTW = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "已載入。/fring options",
+	OPTIONS_TITLE = "Forever Ring — 選項",
+	OPT_CARD_CURSOR = "滑鼠圓環",
+	OPT_CARD_CAST = "施法",
+	OPT_CARD_RANGE = "目標距離",
+	OPT_CARD_ABOUT = "關於",
+	OPT_ENABLE_RING = "顯示滑鼠圓環",
+	OPT_ENABLE_CAST = "在圓環上顯示施法",
+	OPT_ENABLE_RANGE = "在圓環外顯示距離",
+	OPT_RANGE_TEXT = "顯示碼數",
+	OPT_ONLY_COMBAT = "僅在戰鬥中",
+	OPT_ONLY_ENEMY = "僅敵對目標",
+	OPT_OUT_OF_COMBAT = "非戰鬥時顯示",
+	OPT_RING_SIZE = "圓環大小：%d",
+	OPT_RANGE_GAP = "距離環間距：%d",
+	OPT_CLASS_COLOR = "使用職業顏色",
+	INFO_ABOUT = "Forever Ring 在滑鼠上畫一個圓環，並用外圈顯示目標距離。它不會施法。介面跟隨遊戲客戶端語言（11 種語言，預設英語）。",
+	INFO_CREDIT = "由 Vohnka 製作",
+	INFO_CMD_LIST = "/fring — 說明\n/fring options — 本視窗\n/fring toggle — 顯示或隱藏",
+	HELP = "/fring options | toggle",
+	LOCKED = "已開啟。",
+	UNLOCKED = "已關閉。",
+	MINIMAP_L = "左鍵：選項",
+	MINIMAP_R = "右鍵：顯示或隱藏圓環。拖曳可移動。",
+	OPT_MINIMAP = "顯示小地圖按鈕",
+}
+
+L.ptBR = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "Carregado. /fring options",
+	OPTIONS_TITLE = "Forever Ring — Opções",
+	OPT_CARD_CURSOR = "Anel do cursor",
+	OPT_CARD_CAST = "Lançamento",
+	OPT_CARD_RANGE = "Alcance do alvo",
+	OPT_CARD_ABOUT = "Sobre",
+	OPT_ENABLE_RING = "Mostrar o anel do cursor",
+	OPT_ENABLE_CAST = "Mostrar o lançamento no anel",
+	OPT_ENABLE_RANGE = "Mostrar o alcance ao redor do anel",
+	OPT_RANGE_TEXT = "Mostrar jardas",
+	OPT_ONLY_COMBAT = "Somente em combate",
+	OPT_ONLY_ENEMY = "Somente alvos hostis",
+	OPT_OUT_OF_COMBAT = "Mostrar fora de combate",
+	OPT_RING_SIZE = "Tamanho do anel: %d",
+	OPT_RANGE_GAP = "Espaço do anel de alcance: %d",
+	OPT_CLASS_COLOR = "Usar cor da classe",
+	INFO_ABOUT = "Forever Ring desenha um anel no mouse e um segundo círculo com a distância do alvo. Ele nunca lança feitiços. A interface segue o idioma do cliente (11 idiomas, inglês como reserva).",
+	INFO_CREDIT = "Criado por Vohnka",
+	INFO_CMD_LIST = "/fring — ajuda\n/fring options — esta janela\n/fring toggle — mostrar ou ocultar",
+	HELP = "/fring options | toggle",
+	LOCKED = "Ligado.",
+	UNLOCKED = "Desligado.",
+	MINIMAP_L = "Clique esquerdo: opções",
+	MINIMAP_R = "Clique direito: mostrar ou ocultar os anéis. Arraste para mover.",
+	OPT_MINIMAP = "Mostrar botão do minimapa",
+}
+
+L.itIT = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "Caricato. /fring options",
+	OPTIONS_TITLE = "Forever Ring — Opzioni",
+	OPT_CARD_CURSOR = "Anello del cursore",
+	OPT_CARD_CAST = "Lancio",
+	OPT_CARD_RANGE = "Portata del bersaglio",
+	OPT_CARD_ABOUT = "Informazioni",
+	OPT_ENABLE_RING = "Mostra l'anello del cursore",
+	OPT_ENABLE_CAST = "Mostra il lancio sull'anello",
+	OPT_ENABLE_RANGE = "Mostra la portata intorno all'anello",
+	OPT_RANGE_TEXT = "Mostra le iarde",
+	OPT_ONLY_COMBAT = "Solo in combattimento",
+	OPT_ONLY_ENEMY = "Solo bersagli ostili",
+	OPT_OUT_OF_COMBAT = "Mostra fuori dal combattimento",
+	OPT_RING_SIZE = "Dimensione dell'anello: %d",
+	OPT_RANGE_GAP = "Distanza dell'anello di portata: %d",
+	OPT_CLASS_COLOR = "Usa il colore della classe",
+	INFO_ABOUT = "Forever Ring disegna un anello sul mouse e un secondo cerchio per la distanza dal bersaglio. Non lancia mai. L'interfaccia segue la lingua del client (11 lingue, inglese come riserva).",
+	INFO_CREDIT = "Creato da Vohnka",
+	INFO_CMD_LIST = "/fring — aiuto\n/fring options — questa finestra\n/fring toggle — mostra o nascondi",
+	HELP = "/fring options | toggle",
+	LOCKED = "Attivo.",
+	UNLOCKED = "Disattivo.",
+	MINIMAP_L = "Clic sinistro: opzioni",
+	MINIMAP_R = "Clic destro: mostra o nascondi gli anelli. Trascina per spostare.",
+	OPT_MINIMAP = "Mostra il pulsante della minimappa",
+}
+
+L.koKR = {
+	TITLE_SUB = "(Multi language)",
+	INIT = "로드됨. /fring options",
+	OPTIONS_TITLE = "Forever Ring — 설정",
+	OPT_CARD_CURSOR = "커서 고리",
+	OPT_CARD_CAST = "시전",
+	OPT_CARD_RANGE = "대상 거리",
+	OPT_CARD_ABOUT = "정보",
+	OPT_ENABLE_RING = "커서 고리 표시",
+	OPT_ENABLE_CAST = "고리에 시전 표시",
+	OPT_ENABLE_RANGE = "고리 주변에 거리 표시",
+	OPT_RANGE_TEXT = "야드 숫자 표시",
+	OPT_ONLY_COMBAT = "전투 중에만",
+	OPT_ONLY_ENEMY = "적대 대상만",
+	OPT_OUT_OF_COMBAT = "비전투 시에도 표시",
+	OPT_RING_SIZE = "고리 크기: %d",
+	OPT_RANGE_GAP = "거리 고리 간격: %d",
+	OPT_CLASS_COLOR = "직업 색상 사용",
+	INFO_ABOUT = "Forever Ring은 마우스에 고리를 그리고, 그 바깥 원으로 대상 거리를 표시합니다. 직접 시전하지 않습니다. 인터페이스는 클라이언트 언어를 따릅니다(11개 언어, 영어 대체).",
+	INFO_CREDIT = "제작: Vohnka",
+	INFO_CMD_LIST = "/fring — 도움말\n/fring options — 이 창\n/fring toggle — 표시 또는 숨기기",
+	HELP = "/fring options | toggle",
+	LOCKED = "켜짐.",
+	UNLOCKED = "꺼짐.",
+	MINIMAP_L = "왼쪽 클릭: 설정",
+	MINIMAP_R = "오른쪽 클릭: 고리 표시 또는 숨기기. 드래그하여 이동.",
+	OPT_MINIMAP = "미니맵 버튼 표시",
+}
+
+local function withFallback(map)
+	return setmetatable(map, {
+		__index = function(_, key)
+			return L.enUS[key]
+		end,
+	})
+end
+
+local packs = {
+	enUS = L.enUS,
+	frFR = withFallback(L.frFR),
+	deDE = withFallback(L.deDE),
+	esES = withFallback(L.esES),
+	esMX = withFallback(L.esES),
+	ruRU = withFallback(L.ruRU),
+	zhCN = withFallback(L.zhCN),
+	zhTW = withFallback(L.zhTW),
+	ptBR = withFallback(L.ptBR),
+	itIT = withFallback(L.itIT),
+	koKR = withFallback(L.koKR),
+}
+
+function ns.ClientLocale()
+	local ok, loc = pcall(GetLocale)
+	loc = (ok and loc) or "enUS"
 	if loc == "enGB" then
-		loc = "enUS"
-	end
-	if loc == "esMX" then
-		loc = "esES"
+		return "enUS"
 	end
 	return loc
 end
 
-local fallback = setmetatable({}, {
-	__index = function(_, key)
-		return L.enUS[key] or key
-	end,
-})
-
 function ns.T(key)
-	local pack = packs[localeCode()] or fallback
+	local pack = packs[ns.ClientLocale()] or L.enUS
 	return pack[key] or L.enUS[key] or key
 end

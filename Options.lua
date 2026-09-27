@@ -61,11 +61,13 @@ local function makeCard(parent, titleKey, x, y, width, height)
 	title:SetText(ns.T(titleKey))
 	title:SetTextColor(1, 0.82, 0.2)
 	card.title = title
+	card.titleKey = titleKey
+	card.widgets = {}
 	card._y = -30
 	return card
 end
 
-local function addSwitch(card, key, label)
+local function addSwitch(card, key, labelKey)
 	local row = CreateFrame("Frame", nil, card)
 	row:SetHeight(24)
 	row:SetPoint("TOPLEFT", card, "TOPLEFT", 12, card._y)
@@ -74,8 +76,10 @@ local function addSwitch(card, key, label)
 	txt:SetPoint("LEFT", 0, 0)
 	txt:SetPoint("RIGHT", -66, 0)
 	txt:SetJustifyH("LEFT")
-	txt:SetText(label)
+	txt:SetText(ns.T(labelKey))
 	txt:SetTextColor(0.92, 0.92, 0.92)
+	row.label = txt
+	row.labelKey = labelKey
 	local sw = CreateFrame("Button", nil, row, "BackdropTemplate")
 	sw:SetSize(58, 22)
 	sw:SetPoint("RIGHT", 0, 0)
@@ -103,11 +107,14 @@ local function addSwitch(card, key, label)
 		end
 	end)
 	paintSwitch(sw, featureOn(key))
+	row.switch = sw
+	row.dbKey = key
+	table.insert(card.widgets, row)
 	card._y = card._y - 26
 	return row
 end
 
-local function addSlider(card, key, minV, maxV, fmt)
+local function addSlider(card, key, minV, maxV, fmtKey)
 	local row = CreateFrame("Frame", nil, card)
 	row:SetHeight(36)
 	row:SetPoint("TOPLEFT", card, "TOPLEFT", 12, card._y)
@@ -136,7 +143,7 @@ local function addSlider(card, key, minV, maxV, fmt)
 	fill:SetPoint("BOTTOMLEFT", 3, 3)
 	local function render()
 		local value = tonumber(ns.db[key]) or minV
-		label:SetText(string.format(fmt, value))
+		label:SetText(string.format(ns.T(fmtKey), value))
 		local p = (value - minV) / math.max(1, maxV - minV)
 		fill:SetWidth(math.max(2, (bar:GetWidth() - 6) * p))
 	end
@@ -164,8 +171,11 @@ local function addSlider(card, key, minV, maxV, fmt)
 		ns.ApplyRingSettings()
 	end)
 	row:SetScript("OnShow", render)
+	row.refresh = render
+	table.insert(card.widgets, row)
 	render()
 	card._y = card._y - 42
+	return row
 end
 
 local function ensure()
@@ -191,9 +201,11 @@ local function ensure()
 	title:SetPoint("TOPLEFT", 16, -14)
 	title:SetText(ns.T("TITLE"))
 	title:SetTextColor(0.83, 0.63, 0.09)
+	win.title = title
 	local sub = win:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	sub:SetPoint("LEFT", title, "RIGHT", 8, 0)
 	sub:SetText(ns.T("TITLE_SUB"))
+	win.sub = sub
 	sub:SetTextColor(0.55, 0.55, 0.55)
 	local ver = win:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	ver:SetPoint("TOPRIGHT", -40, -16)
@@ -211,21 +223,21 @@ local function ensure()
 	close:SetPoint("TOPRIGHT", 2, 2)
 
 	local ringCard = makeCard(win, "OPT_CARD_CURSOR", 16, -48, 256, 200)
-	addSwitch(ringCard, "showRing", ns.T("OPT_ENABLE_RING"))
-	addSwitch(ringCard, "showOutOfCombat", ns.T("OPT_OUT_OF_COMBAT"))
-	addSwitch(ringCard, "classColor", ns.T("OPT_CLASS_COLOR"))
-	addSlider(ringCard, "ringSize", 24, 128, ns.T("OPT_RING_SIZE"))
+	addSwitch(ringCard, "showRing", "OPT_ENABLE_RING")
+	addSwitch(ringCard, "showOutOfCombat", "OPT_OUT_OF_COMBAT")
+	addSwitch(ringCard, "classColor", "OPT_CLASS_COLOR")
+	addSlider(ringCard, "ringSize", 24, 128, "OPT_RING_SIZE")
 
 	local castCard = makeCard(win, "OPT_CARD_CAST", 288, -48, 256, 200)
-	addSwitch(castCard, "showCast", ns.T("OPT_ENABLE_CAST"))
-	addSwitch(castCard, "onlyCombat", ns.T("OPT_ONLY_COMBAT"))
-	addSwitch(castCard, "showMinimap", ns.T("OPT_MINIMAP"))
+	addSwitch(castCard, "showCast", "OPT_ENABLE_CAST")
+	addSwitch(castCard, "onlyCombat", "OPT_ONLY_COMBAT")
+	addSwitch(castCard, "showMinimap", "OPT_MINIMAP")
 
 	local rangeCard = makeCard(win, "OPT_CARD_RANGE", 16, -260, 256, 140)
-	addSwitch(rangeCard, "showRange", ns.T("OPT_ENABLE_RANGE"))
-	addSwitch(rangeCard, "showRangeText", ns.T("OPT_RANGE_TEXT"))
-	addSwitch(rangeCard, "onlyEnemy", ns.T("OPT_ONLY_ENEMY"))
-	addSlider(rangeCard, "rangeGap", 8, 40, ns.T("OPT_RANGE_GAP"))
+	addSwitch(rangeCard, "showRange", "OPT_ENABLE_RANGE")
+	addSwitch(rangeCard, "showRangeText", "OPT_RANGE_TEXT")
+	addSwitch(rangeCard, "onlyEnemy", "OPT_ONLY_ENEMY")
+	addSlider(rangeCard, "rangeGap", 8, 40, "OPT_RANGE_GAP")
 
 	local about = makeCard(win, "OPT_CARD_ABOUT", 288, -260, 256, 140)
 	local body = about:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -235,7 +247,45 @@ local function ensure()
 	body:SetJustifyV("TOP")
 	body:SetTextColor(0.88, 0.88, 0.88)
 	body:SetText(ns.T("INFO_ABOUT") .. "\n\n" .. ns.T("INFO_CREDIT"))
+	about.body = body
+	win.cards = { ringCard, castCard, rangeCard, about }
+	win:SetScript("OnShow", ns.RelocalizeOptions)
+	ns.RelocalizeOptions()
 	return win
+end
+
+function ns.RelocalizeOptions()
+	if not win then
+		return
+	end
+	if win.title then
+		win.title:SetText(ns.T("TITLE"))
+	end
+	if win.sub then
+		win.sub:SetText(ns.T("TITLE_SUB"))
+	end
+	if not win.cards then
+		return
+	end
+	for _, card in ipairs(win.cards) do
+		if card.title and card.titleKey then
+			card.title:SetText(ns.T(card.titleKey))
+		end
+		if card.body then
+			card.body:SetText(ns.T("INFO_ABOUT") .. "\n\n" .. ns.T("INFO_CREDIT"))
+		end
+		for _, child in ipairs(card.widgets or {}) do
+			if child.label and child.labelKey then
+				child.label:SetText(ns.T(child.labelKey))
+			end
+			if child.switch and child.dbKey then
+				paintSwitch(child.switch, featureOn(child.dbKey))
+			end
+			if child.refresh then
+				child.refresh()
+			end
+		end
+	end
 end
 
 function ns.ToggleOptions()

@@ -1,3 +1,7 @@
+# 0.1.4
+
+- Interface follows the game client language automatically (11 languages, English fallback). No manual language setting.
+
 # 0.1.3
 
 - The cursor ring follows the mouse again, with the range circle around it. Camelot was hiding the old Blizzard texture and breaking cursor math.
