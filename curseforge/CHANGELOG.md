@@ -1,3 +1,7 @@
+# 0.1.5
+
+- Credits live on the Info tab (About, commands, site and Discord), like Forever Rotation.
+
 # 0.1.4
 
 - Interface follows the game client language automatically (11 languages, English fallback). No manual language setting.
