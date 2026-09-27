@@ -1,3 +1,8 @@
+0.1.12
+
+2026-09-27
+- Yard numbers sit above the cursor ring.
+
 0.1.11
 
 2026-09-27

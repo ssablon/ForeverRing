@@ -1,3 +1,7 @@
+# 0.1.12
+
+- Yard numbers sit above the cursor ring.
+
 # 0.1.11
 
 - Range ring sits inside the cursor ring. Yard numbers sit outside. Cast progress uses CursorRing cast segments.

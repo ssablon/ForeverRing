@@ -198,7 +198,7 @@ function ns.CreateRing()
 
 	-- Yards OUTSIDE the cursor ring.
 	rangeLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	rangeLabel:SetPoint("TOP", f, "BOTTOM", 0, -8)
+	rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
 	rangeLabel:SetTextColor(1, 0.92, 0.55)
 	rangeLabel:SetText("")
 
@@ -252,7 +252,7 @@ function ns.ApplyRingSettings()
 	end
 	if rangeLabel then
 		rangeLabel:ClearAllPoints()
-		rangeLabel:SetPoint("TOP", f, "BOTTOM", 0, -8)
+		rangeLabel:SetPoint("BOTTOM", f, "TOP", 0, 8)
 	end
 end
 

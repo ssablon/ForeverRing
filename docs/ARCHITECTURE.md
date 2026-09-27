@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. `Ring.lua` démarre tout seul. Texture curseur `CursorRing\\ring.tga`. Anneau de portée `thin_ring.tga` **à l'intérieur** (taille = ringSize - rangeGap). Yards **sous** l'anneau. Incantation = 180 segments `cast_segment.tga` (ARTWORK), ticker 16 ms, `UnitCastingInfo` / `UnitChannelInfo` (ms ou s).
+Client camelot `16001`. `Ring.lua` démarre tout seul. Texture curseur `CursorRing\\ring.tga`. Anneau de portée `thin_ring.tga` **à l'intérieur** (taille = ringSize - rangeGap). Yards **au-dessus** de l'anneau. Incantation = 180 segments `cast_segment.tga` (ARTWORK), ticker 16 ms, `UnitCastingInfo` / `UnitChannelInfo` (ms ou s).
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 
