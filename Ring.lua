@@ -1,9 +1,11 @@
 local addonName, ns = ...
 
--- CursorRing uses these exact files and SetTexture(path, "CLAMP").
--- We load CursorRing's files first: they already work on this client.
+-- Same files and SetTexture(path, "CLAMP") as CursorRing.
 local RING_FILE = "Interface\\AddOns\\CursorRing\\ring.tga"
 local THIN_FILE = "Interface\\AddOns\\CursorRing\\thin_ring.tga"
+local CAST_FILE = "Interface\\AddOns\\CursorRing\\cast_segment.tga"
+
+local NUM_CAST_SEGMENTS = 180
 
 local CLASS_COLORS = {
 	WARRIOR = { 0.78, 0.61, 0.43 },
@@ -18,8 +20,11 @@ local CLASS_COLORS = {
 }
 
 local f, ring, rangeRing, rangeLabel
+local castSegments = {}
 local cachedUILeft, cachedUIBottom
 local createdOnce = false
+local casting = false
+local castTicker
 
 function ns.PlayerClassColor()
 	local class
@@ -57,12 +62,101 @@ local function rangeGap()
 	return tonumber(ns.db and ns.db.rangeGap) or 18
 end
 
--- CursorRing CreateCursorRing + OnUpdate, copied. Ring.lua starts itself
--- (own events) so a later file error cannot prevent the ring from existing.
+local function innerRangeSize()
+	local size = ringSize()
+	local gap = rangeGap()
+	return math.max(16, size - gap)
+end
+
+local function castColor()
+	return 1, 1, 1
+end
+
+local function clamp01(v)
+	if v < 0 then
+		return 0
+	end
+	if v > 1 then
+		return 1
+	end
+	return v
+end
+
+local function clearCast()
+	local cr, cg, cb = castColor()
+	for i = 1, NUM_CAST_SEGMENTS do
+		if castSegments[i] then
+			castSegments[i]:SetVertexColor(cr, cg, cb, 0)
+		end
+	end
+end
+
+local function toSeconds(startT, endT)
+	startT, endT = tonumber(startT), tonumber(endT)
+	if not startT or not endT then
+		return nil
+	end
+	if endT > 1000 then
+		return startT / 1000, endT / 1000
+	end
+	return startT, endT
+end
+
+local function castProgress()
+	local now = GetTime()
+	local ok, name, _, _, startT, endT = pcall(UnitCastingInfo, "player")
+	if ok and name then
+		startT, endT = toSeconds(startT, endT)
+		if startT and endT and endT > startT then
+			return clamp01((now - startT) / (endT - startT))
+		end
+	end
+	ok, name, _, _, startT, endT = pcall(UnitChannelInfo, "player")
+	if ok and name then
+		startT, endT = toSeconds(startT, endT)
+		if startT and endT and endT > startT then
+			return clamp01(1 - ((now - startT) / (endT - startT)))
+		end
+	end
+	return nil
+end
+
+local function updateCastRing()
+	if not ns.db or ns.db.showCast == false then
+		clearCast()
+		casting = false
+		return
+	end
+	local progress = castProgress()
+	if not progress then
+		if casting then
+			clearCast()
+		end
+		casting = false
+		return
+	end
+	casting = true
+	local cr, cg, cb = castColor()
+	local numLit = math.floor(progress * NUM_CAST_SEGMENTS + 0.5)
+	for i = 1, NUM_CAST_SEGMENTS do
+		if castSegments[i] then
+			castSegments[i]:SetVertexColor(cr, cg, cb, i <= numLit and 1 or 0)
+		end
+	end
+end
+
+local function startCastTicker()
+	if castTicker then
+		return
+	end
+	castTicker = C_Timer.NewTicker(0.016, updateCastRing)
+end
+
 function ns.CreateRing()
 	if ring and f then
 		f:Show()
 		ring:Show()
+		startCastTicker()
 		return f
 	end
 
@@ -75,8 +169,25 @@ function ns.CreateRing()
 	end
 	f:EnableMouse(false)
 	f:SetClampedToScreen(false)
-	-- Visible even if the first OnUpdate errors (no points = invisible).
 	f:SetPoint("CENTER", UIParent, "CENTER")
+
+	-- Distance ring INSIDE the cursor ring (BACKGROUND).
+	rangeRing = f:CreateTexture(nil, "BACKGROUND")
+	rangeRing:SetTexture(THIN_FILE, "CLAMP")
+	rangeRing:SetPoint("CENTER", f, "CENTER")
+	rangeRing:SetSize(innerRangeSize(), innerRangeSize())
+	rangeRing:SetVertexColor(0.05, 0.95, 0.55, 1)
+	rangeRing:Hide()
+
+	-- Cast segments: CursorRing ARTWORK + cast_segment.tga, same size as the ring.
+	for i = 1, NUM_CAST_SEGMENTS do
+		local segment = f:CreateTexture(nil, "ARTWORK")
+		segment:SetTexture(CAST_FILE, "CLAMP")
+		segment:SetAllPoints()
+		segment:SetRotation(math.rad((i - 1) * (360 / NUM_CAST_SEGMENTS)))
+		segment:SetVertexColor(1, 1, 1, 0)
+		castSegments[i] = segment
+	end
 
 	ring = f:CreateTexture(nil, "BORDER")
 	ring:SetTexture(RING_FILE, "CLAMP")
@@ -85,19 +196,12 @@ function ns.CreateRing()
 	ring:SetVertexColor(r, g, b, 1)
 	ring:Show()
 
-	rangeRing = f:CreateTexture(nil, "BACKGROUND")
-	rangeRing:SetTexture(THIN_FILE, "CLAMP")
-	rangeRing:SetPoint("CENTER", f, "CENTER")
-	rangeRing:SetSize(size + rangeGap(), size + rangeGap())
-	rangeRing:SetVertexColor(0.05, 0.95, 0.55, 1)
-	rangeRing:Hide()
-
+	-- Yards OUTSIDE the cursor ring.
 	rangeLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	rangeLabel:SetPoint("TOP", f, "BOTTOM", 0, -1)
+	rangeLabel:SetPoint("TOP", f, "BOTTOM", 0, -8)
 	rangeLabel:SetTextColor(1, 0.92, 0.55)
 	rangeLabel:SetText("")
 
-	-- Exact CursorRing cursor math. Do not pcall this.
 	f:SetScript("OnUpdate", function(self)
 		if not cachedUILeft then
 			cachedUILeft, cachedUIBottom = UIParent:GetRect()
@@ -113,6 +217,7 @@ function ns.CreateRing()
 	end)
 
 	f:Show()
+	startCastTicker()
 	if not createdOnce then
 		createdOnce = true
 		print("|cffd4a017Forever|r |cff66ccffRing|r: cursor ring on")
@@ -142,7 +247,12 @@ function ns.ApplyRingSettings()
 		ring:Show()
 	end
 	if rangeRing then
-		rangeRing:SetSize(size + rangeGap(), size + rangeGap())
+		local inner = innerRangeSize()
+		rangeRing:SetSize(inner, inner)
+	end
+	if rangeLabel then
+		rangeLabel:ClearAllPoints()
+		rangeLabel:SetPoint("TOP", f, "BOTTOM", 0, -8)
 	end
 end
 
@@ -176,6 +286,7 @@ function ns.UpdateRingCombat()
 			else
 				rangeLabel:SetText(string.format("%d+", minR or yards))
 			end
+			rangeLabel:Show()
 		elseif rangeLabel then
 			rangeLabel:SetText("")
 		end
@@ -193,12 +304,17 @@ function ns.DebugRing()
 	ns.Print(string.format("frame=%s ring=%s", f and "yes" or "no", ring and "yes" or "no"))
 end
 
--- Same events as CursorRing: do not wait for Core.lua.
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
 loader:RegisterEvent("PLAYER_ENTERING_WORLD")
 loader:RegisterEvent("UI_SCALE_CHANGED")
 loader:RegisterEvent("DISPLAY_SIZE_CHANGED")
+loader:RegisterEvent("UNIT_SPELLCAST_START")
+loader:RegisterEvent("UNIT_SPELLCAST_STOP")
+loader:RegisterEvent("UNIT_SPELLCAST_FAILED")
+loader:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+loader:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
 loader:SetScript("OnEvent", function(_, event, name)
 	if event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
 		cachedUILeft, cachedUIBottom = nil, nil
@@ -207,5 +323,17 @@ loader:SetScript("OnEvent", function(_, event, name)
 	if event == "ADDON_LOADED" and name ~= addonName then
 		return
 	end
-	ns.CreateRing()
+	if event == "ADDON_LOADED" or event == "PLAYER_ENTERING_WORLD" then
+		ns.CreateRing()
+		return
+	end
+	if name ~= "player" then
+		return
+	end
+	if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+		casting = true
+		return
+	end
+	casting = false
+	clearCast()
 end)

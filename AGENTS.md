@@ -1,8 +1,8 @@
 # Forever Ring — guide agent
 
-Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un second cercle autour affiche la distance de la cible. L'addon ne lance aucun sort.
+Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un anneau de portée plus petit est à l'intérieur. Les yards sont à l'extérieur. L'incantation remplit l'anneau (segments CursorRing). L'addon ne lance aucun sort.
 
-Version actuelle : **0.1.10**. Auteur : Vohnka — https://wow-forever.fr  
+Version actuelle : **0.1.11**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
 Pas de publication CurseForge tant que l'utilisateur n'a pas validé.

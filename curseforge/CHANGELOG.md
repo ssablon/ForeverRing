@@ -1,3 +1,7 @@
+# 0.1.11
+
+- Range ring sits inside the cursor ring. Yard numbers sit outside. Cast progress uses CursorRing cast segments.
+
 # 0.1.10
 
 - Ring.lua starts itself like CursorRing (own events). Uses CursorRing ring.tga. Frame is anchored at screen center first so it stays visible if OnUpdate fails. enabled is forced on.

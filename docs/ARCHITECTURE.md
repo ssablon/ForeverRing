@@ -1,6 +1,6 @@
 # Architecture — Forever Ring
 
-Client camelot `16001`. `Ring.lua` démarre tout seul (événements comme CursorRing), sans dépendre de Core. Texture = `Interface\\AddOns\\CursorRing\\ring.tga` (fichier déjà validé). Le frame est d'abord ancré au centre de l'écran, puis l'`OnUpdate` CursorRing le colle à la souris. Si l'OnUpdate plante, l'anneau reste visible au centre. `enabled` est forcé à true au chargement.
+Client camelot `16001`. `Ring.lua` démarre tout seul. Texture curseur `CursorRing\\ring.tga`. Anneau de portée `thin_ring.tga` **à l'intérieur** (taille = ringSize - rangeGap). Yards **sous** l'anneau. Incantation = 180 segments `cast_segment.tga` (ARTWORK), ticker 16 ms, `UnitCastingInfo` / `UnitChannelInfo` (ms ou s).
 
 Ticker 0,2 s pour la portée et l'incantation. `OnUpdate` seulement pour coller le curseur.
 
