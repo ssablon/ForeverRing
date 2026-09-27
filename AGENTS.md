@@ -1,8 +1,8 @@
 # Forever Ring — guide agent
 
-Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un anneau de portée plus petit est à l'intérieur. Les yards sont à l'extérieur. L'incantation remplit l'anneau (segments CursorRing). L'addon ne lance aucun sort.
+Anneau de curseur pour **WoW Forever** (client camelot, interface `16001`). Un cercle suit la souris. Un anneau de portée plus petit est à l'intérieur. Les yards sont au-dessus. L'incantation remplit l'anneau. L'addon ne lance aucun sort. Textes joueur en anglais par défaut ; Auto = langue du client ; le joueur peut choisir une autre langue (dont le français).
 
-Version actuelle : **0.1.14**. Auteur : Vohnka — https://wow-forever.fr  
+Version actuelle : **0.1.15**. Auteur : Vohnka — https://wow-forever.fr  
 Dépôt : https://github.com/ssablon/ForeverRing (privé, branche `main`).
 
 Pas de publication CurseForge tant que l'utilisateur n'a pas validé.
@@ -30,7 +30,7 @@ Ne pas uploader sur CurseForge tant que ce n'est pas demandé.
 | Besoin | Fichier |
 | --- | --- |
 | Distance cible | `Range.lua` |
-| Anneau curseur + anneau de portée | `Ring.lua` (`ring.tga` à la racine, comme CursorRing) |
+| Anneau curseur + anneau de portée | `Ring.lua` (`ring.tga`, `thin_ring.tga`, `cast_segment.tga` à la racine) |
 | Fenêtre d'options (style Forever Rotation) | `Options.lua` |
 | Crédits, commandes, liens | Onglet Info de `Options.lua` (jamais dans une carte de réglages) |
 | Slash, SavedVariables | `Core.lua` |

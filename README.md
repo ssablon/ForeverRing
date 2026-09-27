@@ -2,7 +2,7 @@
 
 Cursor ring for **WoW Forever** Classic. A second circle around the mouse shows target range. It never casts.
 
-The interface follows the game client language by default (11 languages, English fallback). In options, Language can switch to any supported language.
+Player texts are English by default. Auto follows the game client language. In options, Language can switch to any of the 11 supported languages (including French). Missing strings fall back to English.
 
 Slash: `/fring` · `/foreverring` · `/fring options`
 

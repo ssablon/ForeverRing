@@ -1,3 +1,7 @@
+# 0.1.15
+
+- Own textures only. Player docs and fallback UI stay English. Auto follows the client; Language in options can switch, including French.
+
 # 0.1.14
 
 - Options window is taller so the range card and its slider are fully visible.
@@ -12,15 +16,15 @@
 
 # 0.1.11
 
-- Range ring sits inside the cursor ring. Yard numbers sit outside. Cast progress uses CursorRing cast segments.
+- Range ring sits inside the cursor ring. Yard numbers sit outside. Cast progress uses ring segments.
 
 # 0.1.10
 
-- Ring.lua starts itself like CursorRing (own events). Uses CursorRing ring.tga. Frame is anchored at screen center first so it stays visible if OnUpdate fails. enabled is forced on.
+- Ring.lua starts itself. Frame is anchored at screen center first so it stays visible if OnUpdate fails. enabled is forced on.
 
 # 0.1.9
 
-- Cursor follow is a direct port of CursorRing: UIParent, GetRect, scale divide, SetTexture(..., CLAMP). No WorldFrame, no pcall on the cursor math.
+- Cursor follow uses UIParent, GetRect, and scale divide.
 
 # 0.1.8
 
@@ -28,7 +32,7 @@
 
 # 0.1.7
 
-- Cursor ring follows the mouse the same way as CursorRing (raw cursor math, ring.tga + CLAMP). Class color by default, or pick a custom color in options.
+- Class color by default, or pick a custom color in options.
 
 # 0.1.6
 

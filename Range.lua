@@ -107,7 +107,7 @@ local function libRange()
 	if not LibStub then
 		return nil
 	end
-	local names = { "LibRangeCheck-3.0-WildFork", "LibRangeCheck-3.0" }
+	local names = { "LibRangeCheck-3.0" }
 	for i = 1, #names do
 		local ok, lib = pcall(LibStub, names[i], true)
 		if ok and lib and lib.GetRange then

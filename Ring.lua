@@ -1,9 +1,8 @@
 local addonName, ns = ...
 
--- Same files and SetTexture(path, "CLAMP") as CursorRing.
-local RING_FILE = "Interface\\AddOns\\CursorRing\\ring.tga"
-local THIN_FILE = "Interface\\AddOns\\CursorRing\\thin_ring.tga"
-local CAST_FILE = "Interface\\AddOns\\CursorRing\\cast_segment.tga"
+local RING_FILE = "Interface\\AddOns\\ForeverRing\\ring.tga"
+local THIN_FILE = "Interface\\AddOns\\ForeverRing\\thin_ring.tga"
+local CAST_FILE = "Interface\\AddOns\\ForeverRing\\cast_segment.tga"
 
 local NUM_CAST_SEGMENTS = 48
 
@@ -212,7 +211,7 @@ function ns.CreateRing()
 	rangeRing:SetVertexColor(0.05, 0.95, 0.55, 1)
 	rangeRing:Hide()
 
-	-- Cast segments: CursorRing ARTWORK + cast_segment.tga, same size as the ring.
+	-- Cast segments on the cursor ring.
 	for i = 1, NUM_CAST_SEGMENTS do
 		local segment = f:CreateTexture(nil, "ARTWORK")
 		segment:SetTexture(CAST_FILE, "CLAMP")
