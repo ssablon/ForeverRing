@@ -1,0 +1,4 @@
+0.1.0
+
+2026-09-27
+- First build. Cursor ring plus a range ring around it. Options match Forever Rotation. Not on CurseForge yet.

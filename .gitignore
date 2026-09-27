@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.log
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+secrets/
+.env
+.env.*
+WoWForeverRotCharDB.lua
+SavedVariables/
+*.zip

@@ -1,0 +1,5 @@
+# Version
+
+Bumper `VERSION.txt` (première ligne), les deux TOC, `AGENTS.md`, et `curseforge/CHANGELOG.md`.
+
+Ne pas publier sur CurseForge tant que l'utilisateur n'a pas validé l'addon en jeu.

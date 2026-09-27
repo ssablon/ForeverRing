@@ -1,0 +1,19 @@
+## Interface: 16001
+## AllowLoadGameType: camelot
+## Title: |cffd4a017Forever|r |cff66ccffRing|r
+## Notes: Cursor ring with target range drawn as a circle around the mouse.
+## Notes-frFR: Anneau de curseur avec la distance de la cible en cercle autour de la souris.
+## Version: 0.1.0
+## Author: Vohnka
+## Category: WoW Forever
+## SavedVariables: ForeverRingDB
+## SavedVariablesPerCharacter: ForeverRingCharDB
+## DefaultState: enabled
+## X-Website: https://wow-forever.fr
+
+Credits.lua
+Locale.lua
+Range.lua
+Ring.lua
+Options.lua
+Core.lua

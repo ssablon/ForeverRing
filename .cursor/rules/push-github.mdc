@@ -1,0 +1,11 @@
+# Pousser sur GitHub
+
+Le dépôt `ssablon/ForeverRing` est la source de vérité. Dossier local `ForeverRing`.
+
+Après une modification demandée :
+
+1. Recopier vers `D:\World of Warcraft\_classic_beta_\Interface\AddOns\ForeverRing`
+2. Commiter dans ce dépôt
+3. `git push origin HEAD`
+
+Ne pas force-push `main`. Ne pas commiter de secrets.
