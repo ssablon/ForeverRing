@@ -2,6 +2,10 @@
 
 **Multi language** · Created by **Vohnka** · [wow-forever.fr](https://wow-forever.fr)
 
+**Development status:** Active development by Vohnka has **stopped**. The project is **open source** (MIT) and free to use. Anyone may fork it on GitHub and continue improving it for the community.
+
+**Source code:** [https://github.com/ssablon/ForeverRing](https://github.com/ssablon/ForeverRing) (public)
+
 A ring on the mouse for **Forever Classic** (camelot, interface 16001). A second circle shows range. Cast progress fills the ring.
 
 **This addon never casts.**
@@ -37,15 +41,16 @@ The CurseForge app often installs into official Classic. On Forever, unzip by ha
 - `/fring options` — settings
 - `/fring toggle` — show or hide
 
-## Support
+## Support & contributing
 
-Support is on Discord only, in **English**: [#support](https://discord.gg/qmb2uDu8Z3), #bugs, #suggestions. Screenshots help. Please do not use CurseForge comments for help.
-
+- GitHub (source / forks): [https://github.com/ssablon/ForeverRing](https://github.com/ssablon/ForeverRing)
 - Website: [wow-forever.fr](https://wow-forever.fr)
 - Discord: [discord.gg/qmb2uDu8Z3](https://discord.gg/qmb2uDu8Z3)
 
+Community discussion is on Discord in **English** (**#support**, **#bugs**, **#suggestions**). Screenshots help. Do not use CurseForge comments for support.
+
 ## Credits
 
-**Forever Mouse Ring-Range** was created by **Vohnka** for Forever.
+**Forever Mouse Ring-Range** was created by **Vohnka** for Forever. Development by the original author has ended; the code is released so others can maintain or improve it.
 
-© Vohnka / wow-forever.fr — All rights reserved.
+License: **MIT** — free to use, modify, and redistribute.

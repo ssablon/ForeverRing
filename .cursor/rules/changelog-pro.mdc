@@ -1,0 +1,48 @@
+---
+description: Changelogs CurseForge / VERSION.txt toujours ultra complets, Markdown, pro, anglais
+alwaysApply: true
+---
+
+# Changelogs pro (Markdown)
+
+Chaque bump de version exige un changelog **public**, **anglais**, **Markdown**, **ultra complet**. Même texte dans `VERSION.txt` et en tête de `curseforge/CHANGELOG.md`.
+
+## Forme
+
+```markdown
+# Changelog
+
+## x.y.z
+
+- Player-facing bullet: what changed and what you see in game
+- Extra bullets for edge cases, options, and what did not change
+```
+
+Ou, si le changement est riche, un titre `##` + paragraphe + sous-listes.
+
+- Titres et listes propres. Pas de pavé brut, pas de français public.
+- Ne jamais nommer d’autres addons dans le changelog public.
+
+## Contenu minimum
+
+1. Problème ou besoin joueur.
+2. Comportement nouveau concret.
+3. Portée (tous joueurs / option précise).
+4. Non-régression si utile.
+
+Une ligne « fix » ou « update » est **insuffisante**.
+
+## Exemple
+
+```markdown
+# BAD
+- fix ring
+
+# GOOD
+## 1.1.3
+
+- Range circle stays centered on the cursor ring after resizing.
+- Class-color and custom-color modes unchanged.
+```
+
+Avant upload : preview CurseForge en mode **Markdown**.

@@ -1,1 +1,1 @@
-Forever Mouse Ring-Range (Multi language) — anneau de curseur avec portée et incantation pour Forever Classic. Ne lance aucun sort. 11 langues.
+Open source (MIT). Développement arrêté — forks bienvenus sur GitHub. Anneau de curseur avec portée et incantation pour Forever Classic. Ne lance aucun sort. 11 langues.

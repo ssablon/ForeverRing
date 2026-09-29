@@ -2,6 +2,8 @@ local addonName, ns = ...
 
 local SITE_URL = "https://wow-forever.fr"
 local DISCORD_URL = "https://discord.gg/qmb2uDu8Z3"
+local CURSE_URL = "https://www.curseforge.com/wow/addons/forever-mouse-ring-range"
+local GITHUB_URL = "https://github.com/ssablon/ForeverRing"
 
 local PANEL = {
 	bgFile = "Interface\\Buttons\\WHITE8x8",
@@ -668,13 +670,19 @@ local function ensure()
 	cmdList:SetTextColor(0.92, 0.92, 0.92)
 	win.cmdList = cmdList
 
-	local links = makeCard(infoPage, "OPT_CARD_LINKS", 288, -192, 256, 168)
+	local links = makeCard(infoPage, "OPT_CARD_LINKS", 288, -192, 256, 200)
 	win.siteRow = makeLinkRow(links, "INFO_SITE", SITE_URL)
-	win.siteRow:SetPoint("TOPLEFT", 12, -36)
+	win.siteRow:SetPoint("TOPLEFT", 12, -28)
 	win.siteRow:SetPoint("RIGHT", -12, 0)
 	win.discordRow = makeLinkRow(links, "INFO_DISCORD", DISCORD_URL)
-	win.discordRow:SetPoint("TOPLEFT", 12, -72)
+	win.discordRow:SetPoint("TOPLEFT", 12, -56)
 	win.discordRow:SetPoint("RIGHT", -12, 0)
+	win.curseRow = makeLinkRow(links, "INFO_CURSE", CURSE_URL)
+	win.curseRow:SetPoint("TOPLEFT", 12, -84)
+	win.curseRow:SetPoint("RIGHT", -12, 0)
+	win.githubRow = makeLinkRow(links, "INFO_GITHUB", GITHUB_URL)
+	win.githubRow:SetPoint("TOPLEFT", 12, -112)
+	win.githubRow:SetPoint("RIGHT", -12, 0)
 
 	win.cards = { ringCard, castCard, rangeCard, about, commands, links }
 	win:SetScript("OnShow", function()
@@ -730,7 +738,7 @@ function ns.RelocalizeOptions()
 	if win.cmdList then
 		win.cmdList:SetText(ns.T("INFO_CMD_LIST"))
 	end
-	for _, row in ipairs({ win.siteRow, win.discordRow }) do
+	for _, row in ipairs({ win.siteRow, win.discordRow, win.curseRow, win.githubRow }) do
 		if row and row.label and row.labelKey then
 			row.label:SetText(ns.T(row.labelKey))
 		end

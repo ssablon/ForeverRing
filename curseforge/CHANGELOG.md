@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.3
+
+### Open source — development by Vohnka has stopped
+
+Active development of Forever Mouse Ring-Range by the original author has ended. The GitHub repository is now **public** under the **MIT** license so anyone can fork it, fix bugs, and keep improving the addon for Forever.
+
+- Info → Links now includes **CurseForge** and **GitHub** next to Website and Discord.
+- About / support text states that maintenance by Vohnka has stopped and that forks are welcome.
+- CurseForge description and project source point to https://github.com/ssablon/ForeverRing.
+
+Ring behaviour from **1.1.2** is unchanged aside from these Info texts and links. The addon still never casts.
+
 ## 1.1.2
 
 - Resource ring removed. Cursor and range rings only, as before that feature.

@@ -3,10 +3,11 @@
 Après une modification demandée (Lua, TOC, textes, zip), si l'utilisateur demande une publication :
 
 1. Bumper `VERSION.txt`, les deux TOC, `AGENTS.md`, `curseforge/CHANGELOG.md`.
+   Changelog = `.cursor/rules/changelog-pro.mdc` (anglais, Markdown, ultra complet — pas une ligne « fix »).
 2. Recopier vers AddOns (`D:\World of Warcraft\_classic_beta_\Interface\AddOns\ForeverRing`).
 3. `python curseforge/pack.py` puis :
    `CF_TOKEN` + `CF_PROJECT_ID=1714166` + `python curseforge/upload.py`
-4. Display name = `Forever Mouse Ring-Range <version>`. Version jeu = **1.60.1** (id `17053`).
+4. Display name = `Forever Mouse Ring-Range <version>`. Version jeu = **1.60.1** (id `17053`). Changelog Authors en mode **Markdown**.
 5. Commit + `git push origin HEAD`. Pas de token dans git.
 
 Projet **1714166**, slug `forever-mouse-ring-range`. Changelog public en anglais uniquement, à partir de **1.0.0**. Ne jamais nommer d’autres addons.
